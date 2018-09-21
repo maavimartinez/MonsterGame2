@@ -1,0 +1,4 @@
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Protocol/obj/Debug/netstandard2.0/Protocol.csprojAssemblyReference.cache
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Protocol/obj/Debug/netstandard2.0/Protocol.csproj.CoreCompileInputs.cache
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Protocol/obj/Debug/netstandard2.0/Protocol.AssemblyInfoInputs.cache
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Protocol/obj/Debug/netstandard2.0/Protocol.AssemblyInfo.cs

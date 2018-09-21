@@ -1,0 +1,12 @@
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/obj/Debug/netstandard2.0/UI.csprojAssemblyReference.cache
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/obj/Debug/netstandard2.0/UI.csproj.CoreCompileInputs.cache
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/obj/Debug/netstandard2.0/UI.AssemblyInfoInputs.cache
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/obj/Debug/netstandard2.0/UI.AssemblyInfo.cs
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/bin/Debug/netstandard2.0/UI.deps.json
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/bin/Debug/netstandard2.0/UI.dll
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/bin/Debug/netstandard2.0/UI.pdb
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/bin/Debug/netstandard2.0/Entities.dll
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/bin/Debug/netstandard2.0/Entities.pdb
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/obj/Debug/netstandard2.0/UI.csproj.CopyComplete
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/obj/Debug/netstandard2.0/UI.dll
+/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/UI/obj/Debug/netstandard2.0/UI.pdb
