@@ -18,7 +18,7 @@ namespace Server
             {
                 try
                 {
-                    string[][][] message = conn.ReadMessage();
+                    string[] message = conn.ReadMessage();
                     var request = new Request(message);
 
                     switch (request.Command)
@@ -65,7 +65,7 @@ namespace Server
                 {
                     Console.WriteLine("Exception: " + e.Message);
                     Console.WriteLine(e.StackTrace);
-                    conn.SendMessage(new object[] { ResponseCode.InternalServerError, "There was a problem with the server" });
+                    conn.SendMessage(new string[] { ResponseCode.InternalServerError.ToString(), "There was a problem with the server" });
                     break;
                 }
             }

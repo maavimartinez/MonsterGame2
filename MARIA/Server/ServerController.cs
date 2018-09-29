@@ -186,6 +186,9 @@ namespace Server
             catch (ActionException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.InvalidAction, e.Message));
+            }catch(BusinessException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
             }
         }
 
@@ -205,7 +208,7 @@ namespace Server
         {
             var responseList = new List<object>(payload);
             string code = responseCode.ToString();
-            responseList.Insert(0, responseCode);
+            responseList.Insert(0, responseCode.ToString());
 
             return responseList.ToArray();
         }

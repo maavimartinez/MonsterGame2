@@ -2,7 +2,6 @@
 {
     public enum Command
     {
-        DoAction,
         Login,
         DisconnectClient,
         ListPlayersInGame,
@@ -10,6 +9,7 @@
         ListConnectedClients,
         SelectRole,
         JoinGame,
+        DoAction,
         ReadAction,
         NotifyNearPlayers,
         NotifyMyOwnDeath,

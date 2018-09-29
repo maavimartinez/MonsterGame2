@@ -190,7 +190,8 @@ namespace Client
         private object[] BuildRequest(Command command, params object[] payload)
         {
             List<object> request = new List<object>(payload);
-            request.Insert(0, new object[] { command.GetHashCode(), clientToken });
+            request.Insert(0, command.GetHashCode());
+            request.Insert(1, clientToken);
 
             return request.ToArray();
         }
@@ -272,29 +273,26 @@ namespace Client
                             List<string> positionKillsAndNearPlayers = sendActionResponse.GetDoActionResponse();
                             RefreshBoard(positionKillsAndNearPlayers);
                         }
-                        else if(sendActionResponse.IsInvalidAction())
+                        else if (sendActionResponse.IsInvalidAction())
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             Console.WriteLine("Action: ");
                         }
                         else if (sendActionResponse.PlayerHasWon())
                         {
-                            Console.WriteLine(sendActionResponse.ErrorMessage()); 
-                            EndGame();
+                            Console.WriteLine(sendActionResponse.ErrorMessage());
+                        //    EndGame();
                             exitGame = true;
                         }
-                        else 
+                        else
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             exitGame = true;
                             RemovePlayerFromGame();
                         }
                     }
-
                 }
-                //Cambiar
-               // timeThread.Abort();
-            
+                if(timesOut) EndGame();       
             }
             else
             {
@@ -317,21 +315,19 @@ namespace Client
 
         private void EndGame()
         {
-            TimeControllerConnection.SendMessage(BuildRequest(Command.EndGame));
+            SocketConnection.SendMessage(BuildRequest(Command.EndGame));
 
-            var response = new Response(TimeControllerConnection.ReadMessage());
+            var response = new Response(SocketConnection.ReadMessage());
 
             if (!response.HadSuccess())
             {
                 Console.WriteLine(response.ErrorMessage());
             }
-
         }
 
         private void TimesOut()
         {
             TimeControllerConnection = clientProtocol.ConnectToServer();
-
             while (!timesOut)
             {
 
@@ -343,13 +339,15 @@ namespace Client
                 {
                     if (sendActionResponse.GetRemainingTime().Equals("timesOut"))
                     {
-                        Console.WriteLine("Time's over !");
-                        exitGame = true; 
+                        Console.WriteLine("Time's over!");
+                        exitGame = true;
                         timesOut = true;
                     }
                 }
             }//TimeConnection se cierra del lado del servidor.
+
         }
+
 
         private void RefreshBoard(List<string> position)
         {
@@ -360,7 +358,7 @@ namespace Client
 
         private void ShowKillsAndNearPlayers(List<string> killsAndNear)
         {
-            if (killsAndNear.Count > 0)
+            if (killsAndNear.Count > 1)
             {
                 for (int i = 0; i < killsAndNear.Count; i++)
                 {

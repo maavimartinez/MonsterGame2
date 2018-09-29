@@ -7,5 +7,10 @@ namespace Business.Exceptions
         public ClientNotConnectedException() : base("Client not connected")
         {
         }
+
+        public ClientNotConnectedException(string msg) : base(msg)
+        {
+
+        }
     }
 }
