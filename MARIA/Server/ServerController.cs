@@ -232,6 +232,10 @@ namespace Server
                 string timesOut = gameController.TimesOut();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, timesOut));
+                if (timesOut.Equals("timesOut"))
+                {
+                    connection.Close();
+                }
             }
             catch (RecordNotFoundException e)
             {
@@ -271,6 +275,7 @@ namespace Server
                 gameController.EndGame();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok));
+
             }
             catch (RecordNotFoundException e)
             {

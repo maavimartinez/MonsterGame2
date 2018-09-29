@@ -14,7 +14,7 @@ namespace Server
 
         public void Handle(Connection conn)
         {
-            while (true)
+            while (conn.IsConnected())
             {
                 try
                 {

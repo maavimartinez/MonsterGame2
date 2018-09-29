@@ -346,10 +346,9 @@ namespace Client
                         Console.WriteLine("Time's over !");
                         exitGame = true; 
                         timesOut = true;
-                      //  EndGame();
                     }
                 }
-            }TimeControllerConnection.Close(); 
+            }//TimeConnection se cierra del lado del servidor.
         }
 
         private void RefreshBoard(List<string> position)
