@@ -249,8 +249,8 @@ namespace Client
             if (response.HadSuccess())
             {
                 //Anda, ver si hacerlo en otro connection (socket) o aca esta bn
-        //        var timeThread = new Thread(() => TimesOut());
-          //      timeThread.Start();
+         //       var timeThread = new Thread(() => TimesOut());
+           //     timeThread.Start();
 
                 while (!exitGame && !timesOut)
                 {
@@ -294,7 +294,7 @@ namespace Client
 
                 }
                 //Cambiar
-     //           timeThread.Abort();
+               // timeThread.Abort();
             }
             else
             {
@@ -331,11 +331,11 @@ namespace Client
         {
             while (!timesOut)
             {
-                TimeControllerConnection = clientProtocol.ConnectToServer();
+             //   TimeControllerConnection = clientProtocol.ConnectToServer();
 
-                TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
+                SocketConnection.SendMessage(BuildRequest(Command.TimesOut));
 
-                var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
+                var sendActionResponse = new Response(SocketConnection.ReadMessage());
 
                 if (sendActionResponse.HadSuccess())
                 {

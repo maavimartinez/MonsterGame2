@@ -434,12 +434,14 @@ namespace Business
         private bool TimeHasPassed(int minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
-            if (startTime.AddMinutes(minutes) > DateTime.Now)
-            {
-                return true;
-            }else
+            DateTime endTime = startTime.AddMinutes(minutes);
+            DateTime now = DateTime.Now;
+            if (now < endTime)
             {
                 return false;
+            }else
+            {
+                return true;
             }
         }
 
