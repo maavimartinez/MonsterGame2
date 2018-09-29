@@ -14,6 +14,11 @@ namespace Protocol
             Socket = socket;
         }
 
+        public bool IsConnected()
+        {
+            return Socket.Connected;
+        }
+
         public void SendMessage(object[] message)
         {
             string serializedMessage = Serializer.Serialize(message);
@@ -22,7 +27,7 @@ namespace Protocol
             SendData(data, data.Length);
         }
 
-        public string[][][] ReadMessage()
+        public string[] ReadMessage()
         {
             var dataLength = ReadDataLength();
             var dataReceived = ReadData(dataLength);
@@ -34,10 +39,6 @@ namespace Protocol
         {
             Socket.Shutdown(SocketShutdown.Both);
             Socket.Close();
-        }
-        public bool IsConnected()
-        {
-            return Socket.Connected;
         }
 
         private int ReadDataLength()

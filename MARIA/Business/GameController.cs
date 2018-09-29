@@ -24,7 +24,6 @@ namespace Business
         private readonly object joinGameLocker = new object();
         private readonly object doActionLocker = new object();
 
-
         public GameController(Store store)
         {
             Store = store;
@@ -158,19 +157,17 @@ namespace Business
 
         private void JoinPlayerToGame(Player loggedPlayer)
         {
-            if(Store.ActiveGame.Players.Count < 4)
+            if (Store.ActiveGame.Players.Count < 4)
             {
                 Store.ActiveGame.Players.Add(loggedPlayer);
                 loggedPlayer.NumOfActions = GetMaxTurn();
                 LocatePlayersInBoard();
-                /////////////////////////////////////
-               /* Monster m = new Monster();
+                /////////////////////////////////////*
+              /*  Monster m = new Monster();
                 Client c = new Client("hola", "hol");
                 Guid ip = Guid.NewGuid();
                 c.Username = "soyPrueba";
                 m.Client = c;
-                //int i = loggedPlayer.Position.X + 1;
-                //int j = loggedPlayer.Position.Y;
                 int i = 5;
                 int j = 5;
                 m.Position = new Cell();
@@ -178,12 +175,18 @@ namespace Business
                 m.Position.Y = j;
                 m.Position.Player = m;
                 Store.ActiveGame.Players.Add(m);
+                Store.AllPlayers.Add(m);
                 Store.Board.Cells[i, j].Player = m;*/
                 /////////////////////////////////////////
             }
-            else
+            else if(TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
             {
-                throw new FullGameException();
+                var remainingTime = DateTime.Now - Store.ActiveGame.StartTime;
+                throw new FullGameException("Game is full, try again in " + remainingTime.ToString());
+            }else
+            {
+                var remainingTime = DateTime.Now - Store.ActiveGame.StartTime;
+                throw new FullGameException("You can no longer join this game, try again in " + remainingTime.ToString());
             }
         }
 
@@ -234,25 +237,18 @@ namespace Business
         {
             lock (actionLocker)
             {
-                try
+                Player player = GetLoggedPlayer(usernameFrom);
+                CheckRightTurn(player);
+                if (Store.ActiveGame.WinnerUsername != "")
                 {
-                    Player player = GetLoggedPlayer(usernameFrom);
-                    CheckRightTurn(player);
-                    if (Store.ActiveGame.WinnerUsername != "")
-                    {
-                        throw new GameHasBeenWonException(Store.ActiveGame.WinnerUsername + "has won the game");
-                    }
-                    List<string> ret = new List<string>();
-                    ret = TranslateAndDoAction(player, action);
-                    int x = GetLoggedPlayer(usernameFrom).Position.X;
-                    int y = GetLoggedPlayer(usernameFrom).Position.Y;
-                    ret = ret.Concat(GetNearPlayers(x,y)).ToList(); 
-                    return ret;
+                    throw new GameHasBeenWonException(Store.ActiveGame.WinnerUsername + "has won the game");
                 }
-                catch (ActionException)
-                {
-                    throw new ActionException("Invalid action");
-                }
+                List<string> ret = new List<string>();
+                ret = TranslateAndDoAction(player, action);
+                int x = GetLoggedPlayer(usernameFrom).Position.X;
+                int y = GetLoggedPlayer(usernameFrom).Position.Y;
+                ret = ret.Concat(GetNearPlayers(x, y)).ToList();
+                return ret;
             }
         }
 
@@ -278,10 +274,10 @@ namespace Business
             lock (doActionLocker)
             {
                 if (!player.isAlive) throw new LoggedPlayerIsDeadException();
-                string aux = cmd.Trim().ToUpper();
-                if (aux.Length < 5) throw new ActionException("Invalid action format");
+                string aux = cmd.Replace(" ", String.Empty).ToUpper();
+                if (aux.Length < 5) throw new ActionException("Invalid action format"); //ESTO NO ANDA BIN SI EL USERNAME ES DE UNA LETRA
                 string action = aux.Substring(0, 3);
-                string sndParameter = aux.Substring(3, cmd.Length - 3);
+                string sndParameter = aux.Substring(3);
                 if (action.Equals("MOV"))
                 {
                     CheckCorrectMoveFormat(sndParameter);
@@ -291,7 +287,6 @@ namespace Business
                 }
                 else if (action.Equals("ATT"))
                 {
-                    CheckDefenderForAttackExists(sndParameter);
                     Player defender = GetDefender(sndParameter);
                     ret = Attack(player, defender);
                     player.NumOfActions++;
@@ -303,7 +298,6 @@ namespace Business
             }
             return ret;
         }
-
 
         public void CheckCorrectMoveFormat(string move)
         {
@@ -318,7 +312,7 @@ namespace Business
         {
             int count = 0;
             foreach (Player pl in Store.ActiveGame.Players)
-                if (pl.Client.Username.Equals(username)) count++;
+                if (pl.Client.Username.Equals(username, StringComparison.OrdinalIgnoreCase)) count++;
             if (count == 0) throw new Exception("Non existent player");
         }
 
@@ -326,12 +320,12 @@ namespace Business
         {
             foreach (Player pl in Store.ActiveGame.Players)
             {
-                if (pl.Client.Username.Equals(username))
+                if (pl.Client.Username.Equals(username, StringComparison.OrdinalIgnoreCase))
                 {
                     return pl;
                 }
             }
-            return null;
+            throw new ClientNotConnectedException("Defender does not exist");
         }
 
         public void Move(Player player, string pos)
@@ -339,7 +333,8 @@ namespace Business
             int y = pos[0] - 65;
             int x = (int)Char.GetNumericValue(pos[1]) - 1;
             CheckValidMovement(player, x, y);
-            RemovePlayerFromCell(player);
+            CheckFreePosition(x, y);
+;           RemovePlayerFromCell(player);
             LocatePlayerOnCell(player, x, y);
         }
 
@@ -353,6 +348,11 @@ namespace Business
                 throw new MovementOutOfBoundsException();
             if (player.Position.Y == y && player.Position.X == x)
                 throw new SamePlaceMovementException();
+        }
+
+        private void CheckFreePosition(int x, int y)
+        {
+            if (Store.Board.Cells[x, y].Player != null) throw new CellAlreadyContainsAPlayerException();
         }
 
         private void LocatePlayerOnCell(Player player, int x, int y)
@@ -385,7 +385,6 @@ namespace Business
                     {
                         string nearUsername = Store.Board.Cells[i, j].Player.Client.Username;
                         string role = Store.Board.Cells[i, j].Player.ToString();
-
 
                         nearPlayers.Add(nearUsername + "(" + role + ")" );
                     }
@@ -458,28 +457,20 @@ namespace Business
         {
             Player player = GetLoggedPlayer(username);
             Store.ActiveGame.Players.Remove(player);
-            Store.AllPlayers.Remove(player); //NO SE SI CON ESTO YA SE BORRA Y DSPS PIDE CREAR UNO NUEVO -> DEBERIA
-            if(Store.ActiveGame.Players.Count == 0) 
-            {
-                EndGame(); 
-            }
+            Store.AllPlayers.Remove(player); 
+            //endgame si queda solo el lo borre porque andaba mal
         }
 
         public void EndGame() {
             Game game = Store.ActiveGame;
-            game.StartTime = DateTime.MinValue;
-            game.isOn = false;
-            game.WinnerUsername = "";
-            RemoveAllPlayersFromGame();
+            if (game != null)
+            {
+                game.StartTime = DateTime.MinValue;
+                game.isOn = false;
+                game.WinnerUsername = "";
+                Store.ActiveGame.Players.Clear();
+            }
         }
-
-        private void RemoveAllPlayersFromGame()
-        {
-            List<Player> toDelete = Store.ActiveGame.Players.ToList();
-            Store.AllPlayers.RemoveAll(player => toDelete.Contains(player));
-            Store.ActiveGame.Players.RemoveAll(player => toDelete.Contains(player));
-        }
-
 
         /* FOTOS tambuffer 2048*5
          int size = GetFileSize();

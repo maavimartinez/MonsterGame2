@@ -7,58 +7,67 @@ namespace Protocol
 {
     public class Response
     {
-        private readonly string[][][] responsePackage;
+        private readonly string[] responsePackage;
 
-        public string Message => responsePackage[1][0][0];
+        public string Message => responsePackage[1];
         
-        private string MyResponseCode => responsePackage[0][0][0];
+        private string MyResponseCode => responsePackage[0];
 
-        private int Code => Int32.Parse(MyResponseCode);
+        private int Code {
+            get
+            {
+               return Int32.Parse(MyResponseCode);
+            }
+            set
+            {
+
+            }
+        }
         
 
-        public Response(string[][][] response)
+        public Response(string[] response)
         {
             responsePackage = response;
         }
 
         public string GetClientToken()
         {
-            return responsePackage[1][0][0];
+            return responsePackage[1];
         }
 
         public string GetUsername()
         {
-            return responsePackage[1][0][0];
+            return responsePackage[2];
         }
 
         public string GetIfDead()
         {
-            return responsePackage[1][0][0];
+            return responsePackage[1];
         }
 
         public string GetDeadPlayer()
         {
-            return responsePackage[2][0][0];
+            return responsePackage[1];
         }
 
         public string GetPlayerPosition()
         {
-            return responsePackage[1][0][0];
+            return responsePackage[1];
         }
 
         public string GetRemainingTime()
         {
-            return responsePackage[1][0][0];
+            return responsePackage[1];
         }
 
         public string ErrorMessage()
         {
-            return responsePackage[1][0][0];
+            return responsePackage[1];
         }
 
         public string ServerMessage()
         { 
-            return responsePackage[1][0][0];
+            return responsePackage[1];
         }
 
 
@@ -66,8 +75,8 @@ namespace Protocol
         {
             var messages = new List<string>();
 
-            for (int i = 1; i < responsePackage.Length; i++)
-                messages.Add(responsePackage[i][0][0]);
+            for (int i = 2; i < responsePackage.Length; i++)
+                messages.Add(responsePackage[i]);
 
             return messages;
         }
@@ -77,7 +86,7 @@ namespace Protocol
         {
             var users = new List<string>();
             for (var i = 1; i < responsePackage.Length; i++)
-                users.Add(responsePackage[i][0][0]);
+                users.Add(responsePackage[i]);
             return users;
         }
 
@@ -87,11 +96,10 @@ namespace Protocol
             var ret = new List<string>();
             for (int i = 1; i < responsePackage.Length; i++)
             {
-                ret.Add(responsePackage[i][0][0]);
+                ret.Add(responsePackage[i]);
             }
             return ret;
         }
-
 
         public bool HadSuccess()
         {

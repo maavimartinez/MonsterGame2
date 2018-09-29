@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\ActionException.cs" />
+    <Compile Include="Exceptions\CellAlreadyContainsAPlayer.cs" />
     <Compile Include="Exceptions\FullGameException.cs" />
     <Compile Include="Exceptions\GameHasBeenWonException.cs" />
     <Compile Include="Exceptions\LoggedPlayerIsDeadException.cs" />

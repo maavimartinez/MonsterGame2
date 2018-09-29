@@ -4,7 +4,7 @@ namespace Business.Exceptions
 {
     public class FullGameException : BusinessException
     {
-        public FullGameException() : base("The game is full")
+        public FullGameException(string msg) : base(msg)
         {
         }
     }

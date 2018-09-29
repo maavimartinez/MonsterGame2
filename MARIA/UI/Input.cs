@@ -31,8 +31,8 @@ namespace UI
             while (!exit)
             {
                 string inputOption = Console.ReadLine();
-                bool didParse = int.TryParse(inputOption, out option);
-                if (didParse)
+                bool parseOk = int.TryParse(inputOption, out option);
+                if (parseOk)
                 {
                     if (option >= min && option <= max)
                     {
