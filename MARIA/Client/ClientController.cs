@@ -20,6 +20,7 @@ namespace Client
         private string clientUsername;
         private Connection SocketConnection { get; set; }
         private bool timesOut = false;
+        private bool exitGame = false;
 
         public ClientController()
         {
@@ -249,15 +250,14 @@ namespace Client
                 var timeThread = new Thread(() => TimesOut());
                 timeThread.Start();
 
-                bool exit = false;
-                while (!exit && !timesOut)
+                while (!exitGame && !timesOut)
                 {
 
                     string myAction = Input.RequestInput();
 
                     if (myAction.Equals("exit"))
                     {
-                        exit = true;
+                        exitGame = true;
                     }
                     else
                     {
@@ -275,10 +275,16 @@ namespace Client
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             Console.WriteLine("Action: ");
                         }
-                        else
+                        else if (sendActionResponse.PlayerHasWon())
+                        {
+                            Console.WriteLine(sendActionResponse.ErrorMessage()); 
+                            EndGame();
+                        }
+                        else 
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
-                            exit = true;
+                            exitGame = true;
+                            RemovePlayerFromGame();
                         }
                     }
 
@@ -291,6 +297,30 @@ namespace Client
                 Console.WriteLine(response.ErrorMessage());
             }
             
+        }
+
+        private void RemovePlayerFromGame()
+        {
+            SocketConnection.SendMessage(BuildRequest(Command.RemovePlayerFromGame));
+
+            var response = new Response(SocketConnection.ReadMessage());
+
+            if (!response.HadSuccess())
+            {
+                Console.WriteLine(response.ErrorMessage());
+            }
+        }
+
+        private void EndGame()
+        {
+            SocketConnection.SendMessage(BuildRequest(Command.EndGame));
+
+            var response = new Response(SocketConnection.ReadMessage());
+
+            if (!response.HadSuccess())
+            {
+                Console.WriteLine(response.ErrorMessage());
+            }
         }
 
         private void TimesOut()
@@ -306,8 +336,9 @@ namespace Client
                     if (sendActionResponse.GetRemainingTime().Equals("timesOut"))
                     {
                         Console.WriteLine("Time's over !");
-                        //Aca hay que inhabilitar el doAction
+                        exitGame = true; //Aca hay que inhabilitar el doAction-- exit game y timesout deberian ser el mismo bool
                         timesOut = true;
+                        EndGame();
                     }
                 }
             }

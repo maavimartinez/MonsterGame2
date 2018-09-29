@@ -11,6 +11,8 @@ namespace Protocol
 
         public static int Created = 201;
 
+        public static int GameWon = 202;
+
         public static int BadRequest = 400;
 
         public static int Unauthorized = 401;

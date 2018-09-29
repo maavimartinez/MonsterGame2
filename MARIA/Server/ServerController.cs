@@ -179,9 +179,9 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
-            catch (LoggedPlayerHasWon e)
+            catch (GameHasBeenWonException e)
             {
-                connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
+                connection.SendMessage(BuildResponse(ResponseCode.GameWon, e.Message)); //no se si esta bien que sea una exception
             }
             catch (ActionException e)
             {
@@ -229,7 +229,6 @@ namespace Server
         {
             try
             {
-
                 string timesOut = gameController.TimesOut();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, timesOut));
@@ -242,15 +241,45 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
-            catch (RoleNotChosenException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }
-            catch (FullGameException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }
+        }
 
+        public void RemovePlayerFromGame(Connection connection, Request request)
+        {
+            try
+            {
+                Client loggedUser = CurrentClient(request);
+                string usernameFrom = loggedUser.Username;
+
+                gameController.RemovePlayerFromGame(usernameFrom);
+
+                connection.SendMessage(BuildResponse(ResponseCode.Ok));
+            }
+            catch (RecordNotFoundException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+            }
+            catch (ClientNotConnectedException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
+        }
+
+        public void EndGame(Connection connection, Request request)
+        {
+            try
+            {
+                gameController.EndGame();
+
+                connection.SendMessage(BuildResponse(ResponseCode.Ok));
+            }
+            catch (RecordNotFoundException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+            }
+            catch (ClientNotConnectedException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
         }
 
     }

@@ -103,6 +103,11 @@ namespace Protocol
             return HasCode(ResponseCode.InvalidAction);
         }
 
+        public bool PlayerHasWon()
+        {
+            return HasCode(ResponseCode.GameWon);
+        }
+
         private bool HasCode(int responseCode)
         {
             if(MyResponseCode != null)

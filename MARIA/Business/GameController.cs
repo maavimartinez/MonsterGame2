@@ -238,6 +238,10 @@ namespace Business
                 {
                     Player player = GetLoggedPlayer(usernameFrom);
                     CheckRightTurn(player);
+                    if (Store.ActiveGame.WinnerUsername != "")
+                    {
+                        throw new GameHasBeenWonException(Store.ActiveGame.WinnerUsername + "has won the game");
+                    }
                     List<string> ret = new List<string>();
                     ret = TranslateAndDoAction(player, action);
                     int x = GetLoggedPlayer(usernameFrom).Position.X;
@@ -420,7 +424,11 @@ namespace Business
             {
                 if (pl.isAlive) alivePlayers++;
             }
-            if (alivePlayers == 1) throw new LoggedPlayerHasWon(); 
+            if (alivePlayers == 1)
+            {
+                Store.ActiveGame.WinnerUsername = attacker.Client.Username;
+                throw new GameHasBeenWonException("You have won!");
+            }
         }
 
         public string TimesOut()
@@ -445,6 +453,34 @@ namespace Business
                 threeMinsPassed = true;
             }
             return threeMinsPassed;
+        }
+
+        public void RemovePlayerFromGame(string username)
+        {
+            Player player = GetLoggedPlayer(username);
+            Store.ActiveGame.Players.Remove(player);
+            Store.AllPlayers.Remove(player); //NO SE SI CON ESTO YA SE BORRA Y DSPS PIDE CREAR UNO NUEVO -> DEBERIA
+            if(Store.ActiveGame.Players.Count == 0) 
+            {
+                EndGame(); 
+            }
+        }
+
+        public void EndGame() {
+            Game game = Store.ActiveGame;
+            game.StartTime = new DateTime(0,0,0,0,0,0);
+            game.isOn = false;
+            game.WinnerUsername = "";
+            RemoveAllPlayersFromGame();
+        }
+
+        private void RemoveAllPlayersFromGame()
+        {
+            foreach(Player pl in Store.ActiveGame.Players)
+            {
+                Store.AllPlayers.Remove(pl);
+                Store.ActiveGame.Players.Remove(pl);
+            }
         }
 
 

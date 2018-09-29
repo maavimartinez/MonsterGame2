@@ -50,6 +50,12 @@ namespace Server
                         case Command.TimesOut:
                             serverController.TimesOut(conn, request);
                             break;
+                        case Command.RemovePlayerFromGame:
+                            serverController.RemovePlayerFromGame(conn, request);
+                            break;
+                        case Command.EndGame:
+                            serverController.EndGame(conn, request);
+                            break;
                         default:
                             serverController.InvalidCommand(conn);
                             break;

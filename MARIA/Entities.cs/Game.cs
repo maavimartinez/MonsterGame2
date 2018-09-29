@@ -12,6 +12,8 @@ namespace Entities
 
         public bool isOn { get; set;}
 
+        public string WinnerUsername { get; set; }
+
         public Game()
         {
             Players = new List <Player>();

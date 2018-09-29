@@ -10,14 +10,11 @@ namespace Entities
         {
             Username = username;
             Password = password;
-            Friends = new List<Client>();
             Sessions = new List<Session>();
         }
 
         public string Username { get; set; }
         public string Password { get; set; }
-        public List<Client> Friends { get; set; }
-        public int FriendsCount => Friends.Count;
         public DateTime? ConnectedSince => Sessions.Find(session => session.Active)?.ConnectedSince;
         public int ConnectionsCount => Sessions.Count;
         private List<Session> Sessions { get; }

@@ -13,6 +13,8 @@
         ReadAction,
         NotifyNearPlayers,
         NotifyMyOwnDeath,
-        TimesOut
+        TimesOut,
+        RemovePlayerFromGame,
+        EndGame
     }
 }
