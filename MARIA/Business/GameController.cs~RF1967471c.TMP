@@ -164,10 +164,10 @@ namespace Business
                 loggedPlayer.NumOfActions = GetMaxTurn();
                 LocatePlayersInBoard();
                 /////////////////////////////////////
-               /* Monster m = new Monster();
+                Monster m = new Monster();
                 Client c = new Client("hola", "hol");
                 Guid ip = Guid.NewGuid();
-                c.Username = "soyPrueba";
+                c.Username = "soy" + ip;
                 m.Client = c;
                 //int i = loggedPlayer.Position.X + 1;
                 //int j = loggedPlayer.Position.Y;
@@ -178,7 +178,7 @@ namespace Business
                 m.Position.Y = j;
                 m.Position.Player = m;
                 Store.ActiveGame.Players.Add(m);
-                Store.Board.Cells[i, j].Player = m;*/
+                Store.Board.Cells[i, j].Player = m;
                 /////////////////////////////////////////
             }
             else

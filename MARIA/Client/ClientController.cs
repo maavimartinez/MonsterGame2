@@ -19,6 +19,7 @@ namespace Client
         private string clientToken;
         private string clientUsername;
         private Connection SocketConnection { get; set; }
+        private Connection TimeControllerConnection { get; set; }
         private bool timesOut = false;
         private bool exitGame = false;
 
@@ -213,6 +214,8 @@ namespace Client
 
         private void Play()
         {
+            exitGame = false;
+            timesOut = false;
             int input = Menus.SelectRoleMenu();
             input --;
             string role="";
@@ -240,15 +243,14 @@ namespace Client
 
             var response = new Response(SocketConnection.ReadMessage());
             
-
             BoardUI.DrawBoard(clientUsername, response.GetPlayerPosition());
             Console.WriteLine("Action: ");
 
             if (response.HadSuccess())
             {
                 //Anda, ver si hacerlo en otro connection (socket) o aca esta bn
-                var timeThread = new Thread(() => TimesOut());
-                timeThread.Start();
+        //        var timeThread = new Thread(() => TimesOut());
+          //      timeThread.Start();
 
                 while (!exitGame && !timesOut)
                 {
@@ -258,6 +260,7 @@ namespace Client
                     if (myAction.Equals("exit"))
                     {
                         exitGame = true;
+                        RemovePlayerFromGame();
                     }
                     else
                     {
@@ -266,7 +269,7 @@ namespace Client
                         var sendActionResponse = new Response(SocketConnection.ReadMessage());
 
                         if (sendActionResponse.HadSuccess())
-                        { 
+                        {
                             List<string> positionKillsAndNearPlayers = sendActionResponse.GetDoActionResponse();
                             RefreshBoard(positionKillsAndNearPlayers);
                         }
@@ -279,6 +282,7 @@ namespace Client
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage()); 
                             EndGame();
+                            exitGame = true;
                         }
                         else 
                         {
@@ -290,7 +294,7 @@ namespace Client
 
                 }
                 //Cambiar
-                timeThread.Abort();
+     //           timeThread.Abort();
             }
             else
             {
@@ -327,9 +331,11 @@ namespace Client
         {
             while (!timesOut)
             {
-                SocketConnection.SendMessage(BuildRequest(Command.TimesOut));
+                TimeControllerConnection = clientProtocol.ConnectToServer();
 
-                var sendActionResponse = new Response(SocketConnection.ReadMessage());
+                TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
+
+                var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
 
                 if (sendActionResponse.HadSuccess())
                 {

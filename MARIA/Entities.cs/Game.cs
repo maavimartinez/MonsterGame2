@@ -10,14 +10,18 @@ namespace Entities
 
         public DateTime StartTime { get; set; }
 
+        public int  LimitJoiningTime { get; set; }
+
         public bool isOn { get; set;}
 
         public string WinnerUsername { get; set; }
 
         public Game()
         {
+            LimitJoiningTime = 2;
             Players = new List <Player>();
             isOn = false;
+            WinnerUsername = "";
         }
 
     }

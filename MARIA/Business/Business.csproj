@@ -40,10 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActionLogic.cs" />
     <Compile Include="Exceptions\ActionException.cs" />
     <Compile Include="Exceptions\FullGameException.cs" />
-    <Compile Include="Exceptions\LoggedPlayerHasWon.cs" />
+    <Compile Include="Exceptions\GameHasBeenWonException.cs" />
     <Compile Include="Exceptions\LoggedPlayerIsDeadException.cs" />
     <Compile Include="Exceptions\MovementOutOfBoundsException.cs" />
     <Compile Include="Exceptions\WaitForTurnException.cs" />
@@ -54,7 +53,6 @@
     <Compile Include="Exceptions\ClientAlreadyConnectedException.cs" />
     <Compile Include="Exceptions\ClientNotConnectedException.cs" />
     <Compile Include="Exceptions\RecordNotFoundException.cs" />
-    <Compile Include="GameLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
