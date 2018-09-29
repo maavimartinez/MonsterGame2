@@ -35,6 +35,10 @@ namespace Protocol
             Socket.Shutdown(SocketShutdown.Both);
             Socket.Close();
         }
+        public bool IsConnected()
+        {
+            return Socket.Connected;
+        }
 
         private int ReadDataLength()
         {

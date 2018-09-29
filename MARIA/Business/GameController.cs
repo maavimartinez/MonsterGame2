@@ -475,11 +475,9 @@ namespace Business
 
         private void RemoveAllPlayersFromGame()
         {
-            foreach(Player pl in Store.ActiveGame.Players)
-            {
-                Store.AllPlayers.Remove(pl);
-                Store.ActiveGame.Players.Remove(pl);
-            }
+            List<Player> toDelete = Store.ActiveGame.Players.ToList();
+            Store.AllPlayers.RemoveAll(player => toDelete.Contains(player));
+            Store.ActiveGame.Players.RemoveAll(player => toDelete.Contains(player));
         }
 
 

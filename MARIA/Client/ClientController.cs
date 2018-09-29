@@ -294,6 +294,7 @@ namespace Client
                 }
                 //Cambiar
                // timeThread.Abort();
+            
             }
             else
             {
@@ -324,6 +325,7 @@ namespace Client
             {
                 Console.WriteLine(response.ErrorMessage());
             }
+
         }
 
         private void TimesOut()
@@ -344,10 +346,10 @@ namespace Client
                         Console.WriteLine("Time's over !");
                         exitGame = true; 
                         timesOut = true;
-                       // EndGame();
+                      //  EndGame();
                     }
                 }
-            }//TimeControllerConnection.Close(); no se si habria q cerrar la conexion?
+            }TimeControllerConnection.Close(); 
         }
 
         private void RefreshBoard(List<string> position)
