@@ -248,9 +248,8 @@ namespace Client
 
             if (response.HadSuccess())
             {
-                //Anda, ver si hacerlo en otro connection (socket) o aca esta bn
-         //       var timeThread = new Thread(() => TimesOut());
-           //     timeThread.Start();
+                var timeThread = new Thread(() => TimesOut());
+                timeThread.Start();
 
                 while (!exitGame && !timesOut)
                 {
@@ -317,9 +316,9 @@ namespace Client
 
         private void EndGame()
         {
-            SocketConnection.SendMessage(BuildRequest(Command.EndGame));
+            TimeControllerConnection.SendMessage(BuildRequest(Command.EndGame));
 
-            var response = new Response(SocketConnection.ReadMessage());
+            var response = new Response(TimeControllerConnection.ReadMessage());
 
             if (!response.HadSuccess())
             {
@@ -329,25 +328,26 @@ namespace Client
 
         private void TimesOut()
         {
+            TimeControllerConnection = clientProtocol.ConnectToServer();
+
             while (!timesOut)
             {
-             //   TimeControllerConnection = clientProtocol.ConnectToServer();
 
-                SocketConnection.SendMessage(BuildRequest(Command.TimesOut));
+                TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
 
-                var sendActionResponse = new Response(SocketConnection.ReadMessage());
+                var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
 
                 if (sendActionResponse.HadSuccess())
                 {
                     if (sendActionResponse.GetRemainingTime().Equals("timesOut"))
                     {
                         Console.WriteLine("Time's over !");
-                        exitGame = true; //Aca hay que inhabilitar el doAction-- exit game y timesout deberian ser el mismo bool
+                        exitGame = true; 
                         timesOut = true;
-                        EndGame();
+                       // EndGame();
                     }
                 }
-            }
+            }//TimeControllerConnection.Close(); no se si habria q cerrar la conexion?
         }
 
         private void RefreshBoard(List<string> position)
