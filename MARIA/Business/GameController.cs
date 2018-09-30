@@ -122,6 +122,7 @@ namespace Business
             Player player;
             if(role == "Survivor")
             {
+                CheckIfGameHasMonster();
                 player = new Survivor();
             }else
             {
@@ -129,6 +130,19 @@ namespace Business
             }
             player.Client = loggedClient;
             Store.AllPlayers.Add(player);
+        }
+
+        private void CheckIfGameHasMonster()
+        {
+            if (Store.ActiveGame.Players.Count() == 3)
+            {
+                int countMonsters = 0;
+                foreach (Player pl in Store.ActiveGame.Players)
+                {
+                    if (pl is Monster) countMonsters++;
+                }
+                if (countMonsters == 0) throw new NoMonstersInGameException();
+            }
         }
 
         public void JoinGame(string usernameFrom)

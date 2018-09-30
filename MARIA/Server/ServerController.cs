@@ -119,6 +119,10 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
+            catch (NoMonstersInGameException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
+            }
         }
 
         public void JoinGame(Connection connection, Request request)

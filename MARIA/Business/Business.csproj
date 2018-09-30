@@ -46,6 +46,7 @@
     <Compile Include="Exceptions\GameHasBeenWonException.cs" />
     <Compile Include="Exceptions\LoggedPlayerIsDeadException.cs" />
     <Compile Include="Exceptions\MovementOutOfBoundsException.cs" />
+    <Compile Include="Exceptions\NoMonstersInGameException.cs" />
     <Compile Include="Exceptions\WaitForTurnException.cs" />
     <Compile Include="Exceptions\RoleNotChosenException.cs" />
     <Compile Include="Exceptions\SamePlaceMovementException.cs" />
