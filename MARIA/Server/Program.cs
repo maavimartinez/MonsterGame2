@@ -127,21 +127,36 @@ namespace Server
         private static void GoToMenuOption(int option, GameController controller)
         {
             if (option == 1)
-                controller.GetClients().ForEach(client =>
+                if (controller.GetClients().Count == 0)
                 {
-                    Console.WriteLine(
-                        $"- {client.Username} \tConnected: {client.ConnectionsCount} times");
-                });
+                    Console.WriteLine("There are no logged players.");
+                }
+            else
+                {
+                    controller.GetClients().ForEach(client =>
+                    {
+                        Console.WriteLine(
+                            $"- {client.Username} \tConnected: {client.ConnectionsCount} times");
+                    });
+                }
+
             else if (option == 2)
             {
-                controller.GetLoggedClients().ForEach(client =>
+                if (controller.GetCurrentPlayers().Count==0)
                 {
-                    if (client.ConnectedSince == null) return;
-                    TimeSpan timeConnected = DateTime.Now.Subtract((DateTime)client.ConnectedSince);
-                    string timeConnectedFormatted = timeConnected.ToString(@"hh\:mm\:ss");
-                    Console.WriteLine(
-                        $"- {client.Username} \tConnected: {client.ConnectionsCount} times \tConnected for: {timeConnectedFormatted}");
-                });
+                    Console.WriteLine("There are no players in current game.");
+                }
+                else
+                {
+                    controller.GetCurrentPlayers().ForEach(player =>
+                    {
+                        if (player.Client.ConnectedSince == null) return;
+                        TimeSpan timeConnected = DateTime.Now.Subtract((DateTime)player.Client.ConnectedSince);
+                        string timeConnectedFormatted = timeConnected.ToString(@"hh\:mm\:ss");
+                        Console.WriteLine(
+                            $"- {player.Client.Username} \tConnected: {player.Client.ConnectionsCount} times \tConnected for: {timeConnectedFormatted}");
+                    });
+                } 
             }
         }
 

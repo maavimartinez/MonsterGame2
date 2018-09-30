@@ -98,6 +98,21 @@ namespace Business
             }
         }
 
+        public List<Player> GetCurrentPlayers()
+        {
+            lock (loginLocker)
+            {
+                try
+                {
+                    return Store.ActiveGame.Players;
+                }
+                catch(NullReferenceException e)
+                {
+                    return new List<Player>();
+                }
+            }
+        }
+
         public Player GetLoggedPlayer(string username)
         {
             lock (joinGameLocker)
