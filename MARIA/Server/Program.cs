@@ -44,10 +44,9 @@ namespace Server
                                 connections.Add(conn);
                                 router.Handle(conn);
                             }
-                            catch (Exception e)
+                            catch (Exception e) //Aca pueden caer SocketExceptions y otras
                             {
                                 endServer = true;    
-                                // Cuando hay una conexion entra aca, nose que hacer
                         }
                         });
                         threads.Add(clientThread);
@@ -80,14 +79,23 @@ namespace Server
 
         private static void CloseServer(ServerProtocol server)
         {
-            if(connections.Count > 0)
+            //Thread se cuelga en el Accept. Tenemos que matar ese socket.
+            try
             {
-                server.Socket.Close();// Esta linea la acabo de agregar, no se si esta bien
+                server.Socket.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Cerrando el hilo que escucha conecciones.");
+            }
+
+            if (connections.Count > 0)
+            {
                 foreach (Connection connection in connections)
                 {
                     try
                     {
-                        //Este mata la conexion al socket del router, pero el catch se hace arriba, no aca.
+                        //Este mata la conexion al socket del router, pero el catch se hace arriba, no aca. Esta mal?
                         connection.Close();
 
                     }
@@ -100,19 +108,10 @@ namespace Server
             }
             else
             {
-                //No connections; thread hang up on Accept. Need to kill the socket.
-                try
-                {
-                    server.Socket.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Cerrando el hilo que escucha conecciones.");
-                }
+                //No hay conexiones, no cerramos una a una. Borrar else.
             }
-            //Juntando cada thread con el principal..
+            //Juntando cada thread con el principal..Despues, se cierra la consola.
             CloseThreads();
-
         }
 
         private static void CloseThreads()
