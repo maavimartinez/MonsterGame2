@@ -183,9 +183,9 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
-            catch (GameHasBeenWonException e)
+            catch (GameHasFinishedException e)
             {
-                connection.SendMessage(BuildResponse(ResponseCode.GameWon, e.Message)); //no se si esta bien que sea una exception
+                connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message)); //no se si esta bien que sea una exception
             }
             catch (ActionException e)
             {
@@ -239,10 +239,6 @@ namespace Server
                 string timesOut = gameController.TimesOut();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, timesOut));
-                if (timesOut.Equals("timesOut"))
-                {
-                    connection.Close();
-                }
             }
             catch (RecordNotFoundException e)
             {
@@ -251,14 +247,14 @@ namespace Server
             catch (ClientNotConnectedException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }catch(GameHasBeenWonException e)
+            }catch(GameHasFinishedException e)
             {
-                connection.SendMessage(BuildResponse(ResponseCode.GameWon, e.Message));
+                connection.Close();
+                connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
             }
         }
 
 
-        //fijarse aca como es que gana alguien
         public void RemovePlayerFromGame(Connection connection, Request request)
         {
             try
@@ -278,30 +274,29 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
-            catch (GameHasBeenWonException e)
+            catch (GameHasFinishedException e)
             {
-                connection.SendMessage(BuildResponse(ResponseCode.GameWon, e.Message));
+                connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
             }
         }
 
-        public void EndGame(Connection connection, Request request)
-        {
-            try
-            {
-                gameController.EndGame();
+  //      public void EndGame(Connection connection, Request request)
+   //     {
+  //          try
+    //        {
+     //           gameController.EndGame();
+     
+     //           connection.SendMessage(BuildResponse(ResponseCode.Ok));
 
-                connection.SendMessage(BuildResponse(ResponseCode.Ok));
-
-            }
-            catch (RecordNotFoundException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
-            }
-            catch (ClientNotConnectedException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }
+    //        }
+   //         catch (RecordNotFoundException e)
+    //        {
+    //            connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+    //        }
+    //        catch (ClientNotConnectedException e)
+    //        {
+   //             connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+   //         }
         }
 
     }
-}

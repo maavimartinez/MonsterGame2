@@ -44,7 +44,7 @@ namespace Server
                                 connections.Add(conn);
                                 router.Handle(conn);
                             }
-                            catch (Exception e) //Aca pueden caer SocketExceptions y otras
+                            catch (Exception) //Aca pueden caer SocketExceptions y otras
                             {
                                 endServer = true;    
                         }
@@ -84,7 +84,7 @@ namespace Server
             {
                 server.Socket.Close();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Cerrando el hilo que escucha conecciones.");
             }
@@ -99,7 +99,7 @@ namespace Server
                         connection.Close();
 
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         //Aca no entra nunca
                         Console.WriteLine("Forzando el socket a cerrar.");

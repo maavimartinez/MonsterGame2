@@ -262,8 +262,8 @@ namespace Client
 
                     if (myAction.Equals("exit"))
                     {
-                        exitGame = true;
                         RemovePlayerFromGame();
+                        exitGame = true;
                     }
                     else
                     {
@@ -281,21 +281,20 @@ namespace Client
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             Console.WriteLine("Action: ");
                         }
-                        else if (sendActionResponse.PlayerHasWon())
+                        else if (sendActionResponse.GameHasFinished())
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
-                        //    EndGame();
                             exitGame = true;
+                            TimeControllerConnection.Close();
                         }
                         else
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
-                            exitGame = true;
                             RemovePlayerFromGame();
                         }
                     }
                 }
-                if(timesOut) EndGame();       
+            //    if(timesOut) EndGame();       
             }
             else
             {
@@ -310,46 +309,47 @@ namespace Client
 
             var response = new Response(SocketConnection.ReadMessage());
 
-            if (!response.HadSuccess())
+            if (response.GameHasFinished())
+            {
+                Console.WriteLine(response.ErrorMessage());
+                exitGame = true;
+         //       TimeControllerConnection.Close();
+            }
+            else if (!response.HadSuccess())
             {
                 Console.WriteLine(response.ErrorMessage());
             }
         }
 
-        private void EndGame()
-        {
-            SocketConnection.SendMessage(BuildRequest(Command.EndGame));
+    //    private void EndGame()
+ //       {
+//            SocketConnection.SendMessage(BuildRequest(Command.EndGame));
 
-            var response = new Response(SocketConnection.ReadMessage());
+   //         var response = new Response(SocketConnection.ReadMessage());
 
-            if (!response.HadSuccess())
-            {
-                Console.WriteLine(response.ErrorMessage());
-            }
-        }
+   //         if (!response.HadSuccess())
+    //        {
+      //          Console.WriteLine(response.ErrorMessage());
+   //         }
+ //       }
 
         private void TimesOut()
         {
             TimeControllerConnection = clientProtocol.ConnectToServer();
             while (!timesOut)
             {
-
                 TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
 
                 var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
 
-                if (sendActionResponse.HadSuccess())
+                if (sendActionResponse.GameHasFinished())
                 {
-                    if (sendActionResponse.GetRemainingTime().Equals("timesOut"))
-                    {
-                        Console.WriteLine("Time's over!");
-                        exitGame = true;
-                        timesOut = true;
-                        timer = null;
-                    }
+                    Console.WriteLine("Time's over!");
+                    exitGame = true;
+                    timesOut = true;
+                    timer = null;
                 }
             }// Esta conexion se cierra del lado del servidor.
-
         }
 
 

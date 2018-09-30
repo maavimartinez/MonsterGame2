@@ -253,7 +253,7 @@ namespace Business
             {
                 if (!Store.ActiveGame.isOn)
                 {
-                    throw new GameHasBeenWonException(Store.ActiveGame.Result);
+                    throw new GameHasFinishedException(Store.ActiveGame.Result);
                 }
                 Player player = GetLoggedPlayer(usernameFrom);
                 CheckRightTurn(player);
@@ -446,14 +446,14 @@ namespace Business
                 aliveSurvivors.Trim(',');
                 Store.ActiveGame.Result = aliveSurvivors + "won !";
                 EndGame();
-                throw new GameHasBeenWonException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result);
             }
             else if (alivePlayers == 1 && aliveSurvivors == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime)) 
             {
                 aliveMonsters.Trim(',');
                 Store.ActiveGame.Result = aliveMonsters + "won !";
                 EndGame();
-                throw new GameHasBeenWonException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result);
             }
         }
 
@@ -475,7 +475,7 @@ namespace Business
         {
             string ret = "timesNotOut";
             if (Store.ActiveGame.isOn && TimeHasPassed(3)){
-                ret = "timesOut";
+                GetGameResultByTimeOut();
             }
             return ret;
         }
@@ -499,12 +499,12 @@ namespace Business
                 aliveSurvivors.Trim(',');
                 Store.ActiveGame.Result = aliveSurvivors + "won !";
                 EndGame();
-                throw new GameHasBeenWonException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result);
             }else if(aliveSurvivors == "")
             {
                 Store.ActiveGame.Result = "Nobody won :(";
                 EndGame();
-                throw new GameHasBeenWonException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result);
             }
         }
 
@@ -512,7 +512,16 @@ namespace Business
         {
             Player player = GetLoggedPlayer(username);
             Store.ActiveGame.Players.Remove(player);
-            Store.AllPlayers.Remove(player); 
+            Store.AllPlayers.Remove(player);
+            if (Store.AllPlayers.Count > 0)
+            {
+                CheckIfGameHasEnded();
+            }else if(Store.AllPlayers.Count == 0)
+            {
+                EndGame();
+                Store.ActiveGame.Result = "Game has finished";
+                throw new GameHasFinishedException(Store.ActiveGame.Result); //ver si se puede meter adentor de endgame
+            }
         }
 
         public void EndGame() {
