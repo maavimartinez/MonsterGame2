@@ -9,6 +9,7 @@ using Business;
 using Persistence;
 using Protocol;
 using UI;
+using System.Net.Sockets;
 
 namespace Server
 {
@@ -16,6 +17,8 @@ namespace Server
     {
 
         private static bool endServer = false;
+        private static List<Thread> threads = new List<Thread>();
+        private static List<Connection> connections = new List<Connection>();
 
         static void Main(string[] args)
         {
@@ -30,28 +33,35 @@ namespace Server
                 var router = new Router(new ServerController(gameController));
                 while (!endServer)
                 {
-                    var clientSocket = server.Socket.Accept();
-                    var clientThread = new Thread(() => 
+                    try
                     {
-                        //Hay q agregar un while al router.handle de una manera prolija
-                   //     while (!endServer)
-                     //   {
+                        var clientSocket = server.Socket.Accept();
+                        var clientThread = new Thread(() =>
+                        {
                             try
                             {
-                                router.Handle(new Connection(clientSocket));
-                            }catch (Exception e)
-                            {
-                                endServer = true;
-                                //Cuando el cliente pone exit entra aca, esta mal.
+                                Connection conn = new Connection(clientSocket);
+                                connections.Add(conn);
+                                router.Handle(conn);
                             }
-                            
-                       // }
-                    });
-                    clientThread.Start();
+                            catch (Exception e)
+                            {
+                                endServer = true;    
+                                // Cuando hay una conexion entra aca, nose que hacer
+                        }
+                        });
+                        threads.Add(clientThread);
+                        clientThread.Start();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("The server has stopped listening for connections.");
+                    }
                 }
             });
+            threads.Add(thread);
             thread.Start();
-
             bool exit = false;
             while (!exit)
             {
@@ -61,13 +71,58 @@ namespace Server
 
                 if (option == 3)
                 {
-                    endServer = true;
+                    endServer = true; 
                     exit = true;
                 }
             }
-            thread.Join();
+            CloseServer(server);
         }
 
+        private static void CloseServer(ServerProtocol server)
+        {
+            if(connections.Count > 0)
+            {
+                server.Socket.Close();// Esta linea la acabo de agregar, no se si esta bien
+                foreach (Connection connection in connections)
+                {
+                    try
+                    {
+                        //Este mata la conexion al socket del router, pero el catch se hace arriba, no aca.
+                        connection.Close();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        //Aca no entra nunca
+                        Console.WriteLine("Forzando el socket a cerrar.");
+                    }
+                }
+            }
+            else
+            {
+                //No connections; thread hang up on Accept. Need to kill the socket.
+                try
+                {
+                    server.Socket.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Cerrando el hilo que escucha conecciones.");
+                }
+            }
+            //Juntando cada thread con el principal..
+            CloseThreads();
+
+        }
+
+        private static void CloseThreads()
+        {
+            foreach (Thread thread in threads)
+            {
+                thread.Join();
+            }
+            Console.WriteLine("Every thread has been closed. Good-bye.");
+        }
 
 
         private static void GoToMenuOption(int option, GameController controller)

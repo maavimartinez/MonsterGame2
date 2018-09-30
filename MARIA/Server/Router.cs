@@ -63,8 +63,8 @@ namespace Server
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Exception: " + e.Message);
-                    Console.WriteLine(e.StackTrace);
+                   // Console.WriteLine("Exception: " + e.Message);
+                    //Console.WriteLine(e.StackTrace);
                     conn.SendMessage(new string[] { ResponseCode.InternalServerError.ToString(), "There was a problem with the server" });
                     break;
                 }
