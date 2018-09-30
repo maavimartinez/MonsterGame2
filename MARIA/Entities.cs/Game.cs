@@ -14,14 +14,14 @@ namespace Entities
 
         public bool isOn { get; set;}
 
-        public string WinnerUsername { get; set; }
+        public string Result { get; set; }
 
         public Game()
         {
             LimitJoiningTime = 2;
             Players = new List <Player>();
             isOn = false;
-            WinnerUsername = "";
+            Result = "";
         }
 
     }

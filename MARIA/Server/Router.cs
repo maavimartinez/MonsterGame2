@@ -53,9 +53,6 @@ namespace Server
                         case Command.RemovePlayerFromGame:
                             serverController.RemovePlayerFromGame(conn, request);
                             break;
-                        case Command.EndGame:
-                            serverController.EndGame(conn, request);
-                            break;
                         default:
                             serverController.InvalidCommand(conn);
                             break;

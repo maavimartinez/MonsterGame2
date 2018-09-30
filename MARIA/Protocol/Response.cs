@@ -111,9 +111,9 @@ namespace Protocol
             return HasCode(ResponseCode.InvalidAction);
         }
 
-        public bool PlayerHasWon()
+        public bool GameHasFinished()
         {
-            return HasCode(ResponseCode.GameWon);
+            return HasCode(ResponseCode.GameFinished);
         }
 
         private bool HasCode(int responseCode)
