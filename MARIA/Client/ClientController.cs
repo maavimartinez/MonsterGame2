@@ -209,7 +209,6 @@ namespace Client
                     break;
                 default:
                     DisconnectFromServer();
-                  //  Environment.Exit(0);
                     break;
             }
         }
