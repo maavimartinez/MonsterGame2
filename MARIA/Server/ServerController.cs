@@ -251,9 +251,14 @@ namespace Server
             catch (ClientNotConnectedException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }catch(GameHasBeenWonException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.GameWon, e.Message));
             }
         }
 
+
+        //fijarse aca como es que gana alguien
         public void RemovePlayerFromGame(Connection connection, Request request)
         {
             try
@@ -272,6 +277,10 @@ namespace Server
             catch (ClientNotConnectedException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
+            catch (GameHasBeenWonException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.GameWon, e.Message));
             }
         }
 

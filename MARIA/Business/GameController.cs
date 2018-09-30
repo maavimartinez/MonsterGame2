@@ -90,7 +90,7 @@ namespace Business
             }
         }
 
-                public List<Client> GetClients()
+        public List<Client> GetClients()
         {
             lock (loginLocker)
             {
@@ -251,17 +251,18 @@ namespace Business
         {
             lock (actionLocker)
             {
+                if (!Store.ActiveGame.isOn)
+                {
+                    throw new GameHasBeenWonException(Store.ActiveGame.Result);
+                }
                 Player player = GetLoggedPlayer(usernameFrom);
                 CheckRightTurn(player);
-                if (Store.ActiveGame.WinnerUsername != "")
-                {
-                    throw new GameHasBeenWonException(Store.ActiveGame.WinnerUsername + "has won the game");
-                }
                 List<string> ret = new List<string>();
                 ret = TranslateAndDoAction(player, action);
                 int x = GetLoggedPlayer(usernameFrom).Position.X;
                 int y = GetLoggedPlayer(usernameFrom).Position.Y;
                 ret = ret.Concat(GetNearPlayers(x, y)).ToList();
+                CheckIfGameHasEnded();
                 return ret;
             }
         }
@@ -285,30 +286,27 @@ namespace Business
         private List<string> TranslateAndDoAction(Player player, string cmd)
         {
             List<string> ret = new List<string>();
-            lock (doActionLocker)
+            if (!player.isAlive) throw new LoggedPlayerIsDeadException();
+            string aux = cmd.Replace(" ", String.Empty).ToUpper();
+            if (aux.Length < 5) throw new ActionException("Invalid action format"); //ESTO NO ANDA BIN SI EL USERNAME ES DE UNA LETRA
+            string action = aux.Substring(0, 3);
+            string sndParameter = aux.Substring(3);
+            if (action.Equals("MOV"))
             {
-                if (!player.isAlive) throw new LoggedPlayerIsDeadException();
-                string aux = cmd.Replace(" ", String.Empty).ToUpper();
-                if (aux.Length < 5) throw new ActionException("Invalid action format"); //ESTO NO ANDA BIN SI EL USERNAME ES DE UNA LETRA
-                string action = aux.Substring(0, 3);
-                string sndParameter = aux.Substring(3);
-                if (action.Equals("MOV"))
-                {
-                    CheckCorrectMoveFormat(sndParameter);
-                    Move(player, sndParameter);
-                    player.NumOfActions++;
-                    ret = new List<string>();
-                }
-                else if (action.Equals("ATT"))
-                {
-                    Player defender = GetDefender(sndParameter);
-                    ret = Attack(player, defender);
-                    player.NumOfActions++;
-                }
-                else
-                {
-                    throw new ActionException("Invalid Action");
-                }
+                CheckCorrectMoveFormat(sndParameter);
+                Move(player, sndParameter);
+                player.NumOfActions++;
+                ret = new List<string>();
+            }
+            else if (action.Equals("ATT"))
+            {
+                Player defender = GetDefender(sndParameter);
+                ret = Attack(player, defender);
+                player.NumOfActions++;
+            }
+            else
+            {
+                throw new ActionException("Invalid Action");
             }
             return ret;
         }
@@ -426,21 +424,36 @@ namespace Business
                 ret.Add("killed");
                 ret.Add(defender.Client.Username);
             }
-            CheckIfLoggedPlayerWon(attacker);
             return ret;
         }
 
-        private void CheckIfLoggedPlayerWon(Player attacker)
+        private void CheckIfGameHasEnded()
         {
+            string aliveMonsters = "";
+            string aliveSurvivors = "";
             int alivePlayers = 0;
             foreach (Player pl in Store.AllPlayers)
             {
-                if (pl.isAlive) alivePlayers++;
+                if (pl.isAlive)
+                {
+                    alivePlayers++;
+                    if (pl is Monster)  aliveMonsters = aliveMonsters + pl.Client.Username + ",";
+                    if (pl is Survivor) aliveSurvivors = aliveSurvivors + pl.Client.Username +",";
+                }
             }
-            if (alivePlayers == 1 && TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
+            if (aliveMonsters == "")
             {
-                Store.ActiveGame.WinnerUsername = attacker.Client.Username;
-                throw new GameHasBeenWonException("You have won!");
+                aliveSurvivors.Trim(',');
+                Store.ActiveGame.Result = aliveSurvivors + "won !";
+                EndGame();
+                throw new GameHasBeenWonException(Store.ActiveGame.Result);
+            }
+            else if (alivePlayers == 1 && aliveSurvivors == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime)) 
+            {
+                aliveMonsters.Trim(',');
+                Store.ActiveGame.Result = aliveMonsters + "won !";
+                EndGame();
+                throw new GameHasBeenWonException(Store.ActiveGame.Result);
             }
         }
 
@@ -461,10 +474,38 @@ namespace Business
         public string TimesOut()
         {
             string ret = "timesNotOut";
-            if (Store.ActiveGame.isOn && TimeHasPassed(1)){
+            if (Store.ActiveGame.isOn && TimeHasPassed(3)){
                 ret = "timesOut";
             }
             return ret;
+        }
+
+        public void GetGameResultByTimeOut()
+        {
+            string aliveMonsters = "";
+            string aliveSurvivors = "";
+            int alivePlayers = 0;
+            foreach (Player pl in Store.AllPlayers)
+            {
+                if (pl.isAlive)
+                {
+                    alivePlayers++;
+                    if (pl is Monster) aliveMonsters = aliveMonsters + pl.Client.Username + ",";
+                    if (pl is Survivor) aliveSurvivors = aliveSurvivors + pl.Client.Username + ",";
+                }
+            }
+            if(aliveSurvivors != "")
+            {
+                aliveSurvivors.Trim(',');
+                Store.ActiveGame.Result = aliveSurvivors + "won !";
+                EndGame();
+                throw new GameHasBeenWonException(Store.ActiveGame.Result);
+            }else if(aliveSurvivors == "")
+            {
+                Store.ActiveGame.Result = "Nobody won :(";
+                EndGame();
+                throw new GameHasBeenWonException(Store.ActiveGame.Result);
+            }
         }
 
         public void RemovePlayerFromGame(string username)
@@ -472,7 +513,6 @@ namespace Business
             Player player = GetLoggedPlayer(username);
             Store.ActiveGame.Players.Remove(player);
             Store.AllPlayers.Remove(player); 
-            //endgame si queda solo el lo borre porque andaba mal
         }
 
         public void EndGame() {
@@ -481,7 +521,7 @@ namespace Business
             {
                 game.StartTime = DateTime.MinValue;
                 game.isOn = false;
-                game.WinnerUsername = "";
+                game.Result = "";
                 Store.ActiveGame.Players.Clear();
             }
         }

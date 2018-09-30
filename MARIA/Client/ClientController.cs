@@ -179,10 +179,10 @@ namespace Client
             Console.WriteLine(ClientUI.LoginTitle());
 
             Console.WriteLine(ClientUI.InsertUsername());
-            string username = Input.RequestInput();
+            string username = Input.RequestUsernameAndPassword(ClientUI.InsertUsername());
 
             Console.WriteLine(ClientUI.InsertPassword());
-            string password = Input.RequestInput();
+            string password = Input.RequestUsernameAndPassword(ClientUI.InsertUsername());
 
             return new Entities.Client(username, password);
         }
