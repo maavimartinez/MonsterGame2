@@ -474,7 +474,7 @@ namespace Business
         public string TimesOut()
         {
             string ret = "timesNotOut";
-            if (Store.ActiveGame.isOn && TimeHasPassed(3)){
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)){
                 GetGameResultByTimeOut();
             }
             return ret;
