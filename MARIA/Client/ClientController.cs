@@ -294,7 +294,6 @@ namespace Client
                         }
                     }
                 }
-            //    if(timesOut) EndGame();       
             }
             else
             {
@@ -313,25 +312,12 @@ namespace Client
             {
                 Console.WriteLine(response.ErrorMessage());
                 exitGame = true;
-         //       TimeControllerConnection.Close();
             }
             else if (!response.HadSuccess())
             {
                 Console.WriteLine(response.ErrorMessage());
             }
         }
-
-    //    private void EndGame()
- //       {
-//            SocketConnection.SendMessage(BuildRequest(Command.EndGame));
-
-   //         var response = new Response(SocketConnection.ReadMessage());
-
-   //         if (!response.HadSuccess())
-    //        {
-      //          Console.WriteLine(response.ErrorMessage());
-   //         }
- //       }
 
         private void TimesOut()
         {
