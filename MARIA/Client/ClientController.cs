@@ -22,6 +22,7 @@ namespace Client
         private Connection TimeControllerConnection { get; set; }
         private bool timesOut = false;
         private bool exitGame = false;
+        private Thread timer;
 
         public ClientController()
         {
@@ -208,7 +209,6 @@ namespace Client
                     break;
                 default:
                     DisconnectFromServer();
-                  //  Environment.Exit(0);
                     break;
             }
         }
@@ -249,8 +249,11 @@ namespace Client
 
             if (response.HadSuccess())
             {
-                var timeThread = new Thread(() => TimesOut());
-                timeThread.Start();
+                if (timer == null)
+                {
+                    timer = new Thread(() => TimesOut());
+                    timer.Start();
+                }
 
                 while (!exitGame && !timesOut)
                 {
@@ -342,9 +345,10 @@ namespace Client
                         Console.WriteLine("Time's over!");
                         exitGame = true;
                         timesOut = true;
+                        timer = null;
                     }
                 }
-            }//TimeConnection se cierra del lado del servidor.
+            }// Esta conexion se cierra del lado del servidor.
 
         }
 
