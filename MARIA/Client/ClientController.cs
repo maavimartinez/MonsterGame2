@@ -337,7 +337,7 @@ namespace Client
                     Console.WriteLine("Please type exit to return to the Main Menu");
                     exitGame = true;
                     timesOut = true;
-                    timer.Join();
+                    timer = null;
                 }
             }
         }
