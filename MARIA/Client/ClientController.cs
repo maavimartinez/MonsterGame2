@@ -245,8 +245,9 @@ namespace Client
             SocketConnection.SendMessage(BuildRequest(Command.JoinGame));
 
             var response = new Response(SocketConnection.ReadMessage());
-            
+
             BoardUI.DrawBoard(clientUsername, response.GetPlayerPosition());
+            BoardUI.WriteOnGameUsernames(response.GetOnGameUsernames()); //cambiar de lugar cuando ponga opponents siempre
             Console.WriteLine("Action: ");
 
             if (response.HadSuccess())

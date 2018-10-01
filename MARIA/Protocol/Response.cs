@@ -90,6 +90,16 @@ namespace Protocol
             return users;
         }
 
+        public List<string> GetOnGameUsernames()
+        {
+            var ret = new List<string>();
+            for (int i = 2; i < responsePackage.Length; i++)
+            {
+                ret.Add(responsePackage[i]);
+            }
+            return ret;
+        }
+
 
         public List<string> GetDoActionResponse()
         {

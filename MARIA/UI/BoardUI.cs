@@ -15,6 +15,15 @@ namespace UI
             Console.WriteLine("");
         }
 
+        public static void WriteOnGameUsernames(List<string> opponents)
+        {
+            Console.WriteLine("On-Game Players: ");
+            foreach(string st in opponents)
+            {
+                Console.WriteLine("->" + st);
+            }
+        }
+
         public static void DrawBoard(string username, string playerPosition){
             Console.Clear();
             Console.WriteLine(ClientUI.Title());

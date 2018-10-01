@@ -18,6 +18,12 @@ namespace Server
             this.gameController = gameController;
         }
 
+        public void InvalidCommand(Connection connection)
+        {
+            object[] response = BuildResponse(ResponseCode.BadRequest, "Unrecognizable command");
+            connection.SendMessage(response);
+        }
+
         public void ConnectClient(Connection connection, Request request)
         {
             try
@@ -107,7 +113,8 @@ namespace Server
 
         public void SelectRole(Connection connection, Request request)
         {
-            try{
+            try
+            {
                 Client loggedClient = CurrentClient(request);
 
                 string role = request.Role();
@@ -115,7 +122,8 @@ namespace Server
                 gameController.SelectRole(loggedClient, role);
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok));
-            }catch(ClientNotConnectedException e)
+            }
+            catch (ClientNotConnectedException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
@@ -133,9 +141,12 @@ namespace Server
 
                 gameController.JoinGame(loggedUser.Username);
 
-                string playerPosition = GetPlayerPosition(loggedUser.Username);
+                List<string> response = new List<string>();
+                response.Add(GetPlayerPosition(loggedUser.Username));
+                List<string> onGameUsernames = gameController.GetOnGameUsernames();
+                response = response.Concat(onGameUsernames).ToList();
 
-                connection.SendMessage(BuildResponse(ResponseCode.Ok, playerPosition));
+                connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
             }
             catch (RecordNotFoundException e)
             {
@@ -153,7 +164,6 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
-
         }
 
         public void DoAction(Connection connection, Request request)
@@ -166,7 +176,7 @@ namespace Server
                 string action = request.Action();
 
                 List<string> answer = new List<string>();
-                
+
                 List<string> aux = gameController.DoAction(usernameFrom, action);
 
                 answer.Add(GetPlayerPosition(loggedUser.Username));
@@ -186,36 +196,11 @@ namespace Server
             catch (ActionException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.InvalidAction, e.Message));
-            }catch(BusinessException e)
+            }
+            catch (BusinessException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
             }
-        }
-
-        public void DisconnectClient(Connection connection, Request request)
-        {
-            gameController.DisconnectClient(request.UserToken());
-            connection.SendMessage(BuildResponse(ResponseCode.Ok, "Client disconnected"));
-        }
-
-        public void InvalidCommand(Connection connection)
-        {
-            object[] response = BuildResponse(ResponseCode.BadRequest, "Unrecognizable command");
-            connection.SendMessage(response);
-        }
-
-        private object[] BuildResponse(int responseCode, params object[] payload)
-        {
-            var responseList = new List<object>(payload);
-            string code = responseCode.ToString();
-            responseList.Insert(0, responseCode.ToString());
-
-            return responseList.ToArray();
-        }
-
-        private Client CurrentClient(Request request)
-        {
-            return gameController.GetLoggedClient(request.UserToken());
         }
 
         private string GetPlayerPosition(string username)
@@ -227,6 +212,11 @@ namespace Server
             return pos;
         }
 
+        public void DisconnectClient(Connection connection, Request request)
+        {
+            gameController.DisconnectClient(request.UserToken());
+            connection.SendMessage(BuildResponse(ResponseCode.Ok, "Client disconnected"));
+        }
 
         public void TimesOut(Connection connection, Request request)
         {
@@ -251,7 +241,6 @@ namespace Server
             }
         }
 
-
         public void RemovePlayerFromGame(Connection connection, Request request)
         {
             try
@@ -273,6 +262,20 @@ namespace Server
             }
         }
 
+        private Client CurrentClient(Request request)
+        {
+            return gameController.GetLoggedClient(request.UserToken());
+        }
+
+        private object[] BuildResponse(int responseCode, params object[] payload)
+        {
+            var responseList = new List<object>(payload);
+            string code = responseCode.ToString();
+            responseList.Insert(0, responseCode.ToString());
+
+            return responseList.ToArray();
         }
 
     }
+
+}

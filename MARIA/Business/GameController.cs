@@ -172,6 +172,16 @@ namespace Business
             }
         }
 
+        public List<string> GetOnGameUsernames()
+        {
+            List<string> ret = new List<string>();
+            foreach(Player pl in Store.ActiveGame.Players)
+            {
+                ret.Add(pl.Client.Username);
+            }
+            return ret;
+        }
+
         private void InitializeGame()
         {
             if (Store.ActiveGame == null) Store.ActiveGame = new Game();
@@ -192,22 +202,6 @@ namespace Business
                 Store.ActiveGame.Players.Add(loggedPlayer);
                 loggedPlayer.NumOfActions = GetMaxTurn();
                 LocatePlayersInBoard();
-                /////////////////////////////////////*
-              /*  Monster m = new Monster();
-                Client c = new Client("hola", "hol");
-                Guid ip = Guid.NewGuid();
-                c.Username = "soyPrueba";
-                m.Client = c;
-                int i = 5;
-                int j = 5;
-                m.Position = new Cell();
-                m.Position.X = i;
-                m.Position.Y = j;
-                m.Position.Player = m;
-                Store.ActiveGame.Players.Add(m);
-                Store.AllPlayers.Add(m);
-                Store.Board.Cells[i, j].Player = m;*/
-                /////////////////////////////////////////
             }
             else if(TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
             {
@@ -484,7 +478,7 @@ namespace Business
         private bool TimeHasPassed(int minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
-            DateTime endTime = startTime.AddMinutes(0.2);
+            DateTime endTime = startTime.AddMinutes(minutes);
             DateTime now = DateTime.Now;
             if (now < endTime)
             {
