@@ -101,6 +101,26 @@ namespace Protocol
             return ret;
         }
 
+        public List<string> GetTimeOutResponse()
+        {
+            var ret = new List<string>();
+            for (int i = 1; i < responsePackage.Length; i++)
+            {
+                ret.Add(responsePackage[i]);
+            }
+            return ret;
+        }
+
+        public List<string> GetRemovePlayerFromGameResponse()
+        {
+            var ret = new List<string>();
+            for (int i = 1; i < responsePackage.Length; i++)
+            {
+                ret.Add(responsePackage[i]);
+            }
+            return ret;
+        }
+
         public bool HadSuccess()
         {
             return HasCode(ResponseCode.Ok) || HasCode(ResponseCode.Created);
@@ -109,11 +129,6 @@ namespace Protocol
         public bool IsInvalidAction()
         {
             return HasCode(ResponseCode.InvalidAction);
-        }
-
-        public bool GameHasFinished()
-        {
-            return HasCode(ResponseCode.GameFinished);
         }
 
         private bool HasCode(int responseCode)

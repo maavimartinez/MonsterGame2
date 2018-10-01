@@ -16,7 +16,7 @@ namespace Entities
 
         public int  LimitJoiningTime { get; set; }
 
-        public bool isOn { get; set;}
+        public bool isOn { get; set; }
 
         public string Result { get; set; }
 

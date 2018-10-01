@@ -17,6 +17,7 @@ namespace Business
 
         private Store Store { get; set; }
         private Server Server { get; set; }
+        private string ActiveGameResult { get; set; }
         private readonly object gameLocker = new object();
         private readonly object selectRoleLocker = new object();
         private readonly object loginLocker = new object();
@@ -179,6 +180,7 @@ namespace Business
             {
                 Store.ActiveGame.isOn = true;
                 Store.ActiveGame.StartTime = DateTime.Now;
+                ActiveGameResult = "";
                 Store.Board.InitializeBoard();
             }
         }
@@ -265,21 +267,21 @@ namespace Business
         {
             lock (actionLocker)
             {
+                List<string> ret = new List<string>();
                 if (!Store.ActiveGame.isOn)
                 {
-                    throw new GameHasFinishedException(Store.ActiveGame.Result);
+                    ret.Add("Finished");
+                    ret.Add(ActiveGameResult);
                 }
                 Player player = GetLoggedPlayer(usernameFrom);
                 if (!player.isAlive) throw new LoggedPlayerIsDeadException();
                 CheckRightTurn(player);
-                List<string> ret = new List<string>();
                 ret = TranslateAndDoAction(player, action);
                 int x = GetLoggedPlayer(usernameFrom).Position.X;
                 int y = GetLoggedPlayer(usernameFrom).Position.Y;
                 ret = ret.Concat(GetNearPlayers(x, y)).ToList();
-                CheckIfAPlayerHasDied();
-                CheckIfAPlayerHasLeftTheGame();
-                CheckIfGameHasEnded();
+                ret = ret.Concat(GetPlayerHP(player)).ToList();
+                if (CheckIfGameHasEnded() != null) ret = ret.Concat(CheckIfGameHasEnded()).ToList();
                 return ret;
             }
         }
@@ -425,7 +427,14 @@ namespace Business
             {
                 return nearPlayers;
             }
+        }
 
+        public List<string> GetPlayerHP(Player player)
+        {
+            List<string> ret = new List<string>();
+            ret.Add("HP");
+            ret.Add(player.HP+"");
+            return ret;
         }
 
         public List<string> Attack(Player attacker, Player defender)
@@ -443,7 +452,7 @@ namespace Business
             return ret;
         }
 
-        private void CheckIfGameHasEnded()
+        private List<string> CheckIfGameHasEnded()
         {
             string aliveMonsters = "";
             string aliveSurvivors = "";
@@ -460,23 +469,22 @@ namespace Business
             if (aliveMonsters == "")
             {
                 aliveSurvivors.Trim(',');
-                Store.ActiveGame.Result = aliveSurvivors + "won !";
-                EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result);
+                ActiveGameResult = aliveSurvivors + "won !";
+                return EndGame();
             }
             else if (alivePlayers == 1 && aliveSurvivors == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime)) 
             {
                 aliveMonsters.Trim(',');
-                Store.ActiveGame.Result = aliveMonsters + "won !";
-                EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result);
+                ActiveGameResult = aliveMonsters + "won !";
+                return EndGame();
             }
+            return null;
         }
 
         private bool TimeHasPassed(int minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
-            DateTime endTime = startTime.AddMinutes(0.3);
+            DateTime endTime = startTime.AddMinutes(0.2);
             DateTime now = DateTime.Now;
             if (now < endTime)
             {
@@ -487,16 +495,17 @@ namespace Business
             }
         }
 
-        public string TimesOut()
+        public List<string> TimesOut()
         {
-            string ret = "timesNotOut";
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1)){
-                GetGameResultByTimeOut();
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)){
+                return GetGameResultByTimeOut();
             }
+            List<string> ret = new List<string>();
+            ret.Add("timesNotOut");
             return ret;
         }
 
-        public void GetGameResultByTimeOut()
+        public List<string> GetGameResultByTimeOut()
         {
             string aliveMonsters = "";
             string aliveSurvivors = "";
@@ -513,34 +522,34 @@ namespace Business
             if(aliveSurvivors != "")
             {
                 aliveSurvivors.Trim(',');
-                Store.ActiveGame.Result = aliveSurvivors + "won !";
-                EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result+"hola");
+                ActiveGameResult = aliveSurvivors + "won !";
+                return EndGame();
             }else if(aliveSurvivors == "")
             {
-                Store.ActiveGame.Result = "Nobody won :(";
-                EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result+"hola");
+                ActiveGameResult = "Nobody won :(";
+                return EndGame();
             }
+            return null;
         }
 
-        public void RemovePlayerFromGame(string username)
+        public List<string> RemovePlayerFromGame(string username)
         {
+            List<string> ret = new List<string>();
             Player player = GetLoggedPlayer(username);
             Store.ActiveGame.Players.Remove(player);
             Store.AllPlayers.Remove(player);
             if (Store.AllPlayers.Count > 0)
             {
-                CheckIfGameHasEnded();
+                return CheckIfGameHasEnded();
             }else if(Store.AllPlayers.Count == 0)
             {
-                EndGame();
-                Store.ActiveGame.Result = "Game has finished";
-                throw new GameHasFinishedException(Store.ActiveGame.Result); //ver si se puede meter adentor de endgame
+                ActiveGameResult = "Game has finished";
+                return EndGame();
             }
+            return ret;
         }
 
-        public void EndGame() {
+        public List<string> EndGame() {
             Game game = Store.ActiveGame;
             if (game != null)
             {
@@ -548,7 +557,12 @@ namespace Business
                 game.isOn = false;
                 game.Result = "";
                 Store.ActiveGame.Players.Clear();
+                List<string> ret = new List<string>();
+                ret.Add("Finished");
+                ret.Add(ActiveGameResult);
+                return ret;             
             }
+            return null;
         }
 
         /* FOTOS tambuffer 2048*5

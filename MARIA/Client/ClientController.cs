@@ -257,14 +257,14 @@ namespace Client
                     timer.Start();
                 }
 
-                while (!exitGame || !timesOut)
+                while ((!exitGame || !timesOut) && !playerIsDead)
                 {
 
                     string myAction = Input.RequestInput();
 
-                    if (exitGame || timesOut) break;
+                    if (timesOut) break;
 
-                    if (myAction.Equals("exit") && !playerIsDead)
+                    if (myAction.Equals("exit") )
                     {
                         RemovePlayerFromGame();
                         exitGame = true;
@@ -277,23 +277,21 @@ namespace Client
 
                         if (sendActionResponse.HadSuccess())
                         {
-                            List<string> positionKillsAndNearPlayers = sendActionResponse.GetDoActionResponse();
-                            RefreshBoard(positionKillsAndNearPlayers);
+                            List<string> actionResponse = sendActionResponse.GetDoActionResponse();
+                            RefreshBoard(actionResponse);
+                            ShowIfGameFinished(actionResponse);
                         }
                         else if (sendActionResponse.IsInvalidAction())
                         {
+                            Console.WriteLine(sendActionResponse.ErrorMessage());
                             if (sendActionResponse.ErrorMessage() == "You are dead and can no longer play")
                             {
                                 playerIsDead = true;
                             }
-                            Console.WriteLine(sendActionResponse.ErrorMessage());
-                            Console.WriteLine("Action: ");
-                        }
-                        else if (sendActionResponse.GameHasFinished())
-                        {
-                            Console.WriteLine(sendActionResponse.ErrorMessage());
-                            exitGame = true;
-                          //  TimeControllerConnection.Close();
+                            else
+                            {
+                                Console.WriteLine("Action: ");
+                            }
                         }
                         else
                         {
@@ -302,7 +300,6 @@ namespace Client
                         }
                     }
                 }
-                if()
             }
             else
             {
@@ -317,12 +314,11 @@ namespace Client
 
             var response = new Response(SocketConnection.ReadMessage());
 
-            if (response.GameHasFinished())
+            if (response.HadSuccess())
             {
-                Console.WriteLine(response.ErrorMessage());
-                exitGame = true;
+                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse());
             }
-            else if (!response.HadSuccess())
+            else if (response.HadSuccess())
             {
                 Console.WriteLine(response.ErrorMessage());
             }
@@ -337,43 +333,57 @@ namespace Client
 
                 var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
 
-                if (sendActionResponse.GameHasFinished())
+                if (sendActionResponse.HadSuccess())
                 {
-                    Console.WriteLine("Active Game time's over!. You can now join a new game.");
-                    Console.WriteLine(sendActionResponse.ErrorMessage());
-                    exitGame = true;
+                    ShowIfGameFinished(sendActionResponse.GetTimeOutResponse());
                     timesOut = true;
                     timer = null;
                 }
             }
         }
 
+        private void ShowIfGameFinished(List<string> responseMessage)
+        {
+            for(int i = 0; i< responseMessage.Count(); i++)
+            {
+                if(responseMessage[i] == "Finished")
+                {
+                    Console.WriteLine(responseMessage[i + 1]);
+                    Console.WriteLine("Active Game's time is over!. You can now join a new game.");
+                    exitGame = true;
+                }
+            }
+        }
 
         private void RefreshBoard(List<string> position)
         {
             BoardUI.DrawBoard(clientUsername, position[0]);
-            ShowKillsAndNearPlayers(position);
+            ShowKillsNearPlayersAndHP(position);
             Console.WriteLine("Action: ");
         }
 
-        private void ShowKillsAndNearPlayers(List<string> killsAndNear)
+        private void ShowKillsNearPlayersAndHP(List<string> killsNearHP)
         {
-            if (killsAndNear.Count > 1)
+            if (killsNearHP.Count > 1)
             {
-                for (int i = 0; i < killsAndNear.Count; i++)
+                for (int i = 0; i < killsNearHP.Count; i++)
                 {
-                    if (killsAndNear[i] == "killed")
+                    if (killsNearHP[i] == "killed")
                     {
-                        Console.WriteLine("You have killed " + killsAndNear[i + 1] + " !");
+                        Console.WriteLine("You have killed " + killsNearHP[i + 1] + " !");
                     }
-                    else if (killsAndNear[i] == "near")
+                    else if (killsNearHP[i] == "near")
                     {
                         Console.WriteLine("You are next to: ");
-                        for(int j = i+1; j< killsAndNear.Count; j++)
+                        for(int j = i+1; j< killsNearHP.Count; j++)
                         {
-                            Console.WriteLine(killsAndNear[j]);
+                            Console.WriteLine(killsNearHP[j]);
                         }
-                        i = killsAndNear.Count;
+                        i = killsNearHP.Count;
+                    }
+                    else if (killsNearHP[i] == "HP")
+                    {
+                        Console.WriteLine("HP = " + killsNearHP[i + 1]);
                     }
                 }
             }
