@@ -285,7 +285,7 @@ namespace Client
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             exitGame = true;
-                            TimeControllerConnection.Close();
+                          //  TimeControllerConnection.Close();
                         }
                         else
                         {
