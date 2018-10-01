@@ -332,7 +332,7 @@ namespace Client
 
                 if (sendActionResponse.GameHasFinished())
                 {
-                    Console.WriteLine("Time's over!");
+                    Console.WriteLine("Active Game time's over!. You can now join a new game.");
                     Console.WriteLine(sendActionResponse.ErrorMessage());
                     Console.WriteLine("Please type exit to return to the Main Menu");
                     exitGame = true;
