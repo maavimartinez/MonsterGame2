@@ -249,8 +249,8 @@ namespace Server
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }catch(GameHasFinishedException e)
             {
-                connection.Close();
                 connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
+                connection.Close();
             }
         }
 

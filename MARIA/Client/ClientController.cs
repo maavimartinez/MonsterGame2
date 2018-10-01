@@ -255,10 +255,12 @@ namespace Client
                     timer.Start();
                 }
 
-                while (!exitGame && !timesOut)
+                while (!exitGame || !timesOut)
                 {
 
                     string myAction = Input.RequestInput();
+
+                    if (exitGame || timesOut) break; //PONER QUE ESTA MAL
 
                     if (myAction.Equals("exit"))
                     {
@@ -285,7 +287,6 @@ namespace Client
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             exitGame = true;
-                            TimeControllerConnection.Close();
                         }
                         else
                         {
@@ -331,11 +332,13 @@ namespace Client
                 if (sendActionResponse.GameHasFinished())
                 {
                     Console.WriteLine("Time's over!");
+                    Console.WriteLine(sendActionResponse.ErrorMessage());
+                    Console.WriteLine("Please type exit to return to the Main Menu");
                     exitGame = true;
                     timesOut = true;
-                    timer = null;
+                    timer.Join();
                 }
-            }// Esta conexion se cierra del lado del servidor.
+            }
         }
 
 

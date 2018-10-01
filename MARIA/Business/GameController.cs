@@ -149,7 +149,7 @@ namespace Business
 
         private void CheckIfGameHasMonster()
         {
-            if (Store.ActiveGame.Players.Count() == 3)
+            if (Store.ActiveGame != null && Store.ActiveGame.Players.Count() == 3)
             {
                 int countMonsters = 0;
                 foreach (Player pl in Store.ActiveGame.Players)
@@ -475,7 +475,7 @@ namespace Business
         private bool TimeHasPassed(int minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
-            DateTime endTime = startTime.AddMinutes(minutes);
+            DateTime endTime = startTime.AddMinutes(0.3);
             DateTime now = DateTime.Now;
             if (now < endTime)
             {
@@ -514,12 +514,12 @@ namespace Business
                 aliveSurvivors.Trim(',');
                 Store.ActiveGame.Result = aliveSurvivors + "won !";
                 EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result+"hola");
             }else if(aliveSurvivors == "")
             {
                 Store.ActiveGame.Result = "Nobody won :(";
                 EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result+"hola");
             }
         }
 

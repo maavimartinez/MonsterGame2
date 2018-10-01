@@ -21,18 +21,31 @@ namespace Protocol
 
         public void SendMessage(object[] message)
         {
-            string serializedMessage = Serializer.Serialize(message);
-            var data = Encoding.ASCII.GetBytes(serializedMessage);
-            SendDataLength(data);
-            SendData(data, data.Length);
+            try
+            {
+                string serializedMessage = Serializer.Serialize(message);
+                var data = Encoding.ASCII.GetBytes(serializedMessage);
+                SendDataLength(data);
+                SendData(data, data.Length);
+            }catch(SocketException e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         public string[] ReadMessage()
         {
-            var dataLength = ReadDataLength();
-            var dataReceived = ReadData(dataLength);
-            var message = Encoding.UTF8.GetString(dataReceived);
-            return Serializer.DeSerialize(message);
+            try
+            {
+                var dataLength = ReadDataLength();
+                var dataReceived = ReadData(dataLength);
+                var message = Encoding.UTF8.GetString(dataReceived);
+                return Serializer.DeSerialize(message);
+            }catch(SocketException e)
+            {
+                Console.WriteLine(e.Message);
+                return null;
+            }
         }
 
         public void Close()
