@@ -13,26 +13,22 @@ namespace Protocol
 
         public void Start(string ip, int port)
         {
-            var serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+            try
+            {
+                var serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
 
-            Socket = new Socket(
-                AddressFamily.InterNetwork,
-                SocketType.Stream,
-                ProtocolType.Tcp);
+                Socket = new Socket(
+                    AddressFamily.InterNetwork,
+                    SocketType.Stream,
+                    ProtocolType.Tcp);
 
-            Socket.Bind(serverIpEndPoint);
-            Socket.Listen(100);
+                Socket.Bind(serverIpEndPoint);
+                Socket.Listen(100);
+            }catch(SocketException e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
-    /*    public delegate void ConnectionDelegate(Connection connection);
-
-        public void AcceptConnection(ConnectionDelegate onConnection)
-        {
-            if (onConnection == null) throw new ArgumentNullException(nameof(onConnection));
-
-            var clientSocket = Socket.Accept();
-            var thread = new Thread(() => onConnection(new Connection(clientSocket)));
-            thread.Start();
-        }*/
     }
 }

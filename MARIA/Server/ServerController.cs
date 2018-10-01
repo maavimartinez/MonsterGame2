@@ -251,7 +251,6 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
                 connection.Close();
-                
             }
         }
 

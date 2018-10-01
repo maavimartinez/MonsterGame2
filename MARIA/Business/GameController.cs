@@ -149,7 +149,7 @@ namespace Business
 
         private void CheckIfGameHasMonster()
         {
-            if (Store.ActiveGame.Players.Count() == 3)
+            if (Store.ActiveGame != null && Store.ActiveGame.Players.Count() == 3)
             {
                 int countMonsters = 0;
                 foreach (Player pl in Store.ActiveGame.Players)
@@ -303,7 +303,7 @@ namespace Business
             List<string> ret = new List<string>();
             if (!player.isAlive) throw new LoggedPlayerIsDeadException();
             string aux = cmd.Replace(" ", String.Empty).ToUpper();
-            if (aux.Length < 5) throw new ActionException("Invalid action format"); //ESTO NO ANDA BIN SI EL USERNAME ES DE UNA LETRA
+            if (aux.Length < 5) throw new ActionException("Invalid action format");
             string action = aux.Substring(0, 3);
             string sndParameter = aux.Substring(3);
             if (action.Equals("MOV"))
@@ -475,7 +475,7 @@ namespace Business
         private bool TimeHasPassed(int minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
-            DateTime endTime = startTime.AddMinutes(minutes);
+            DateTime endTime = startTime.AddMinutes(0.3);
             DateTime now = DateTime.Now;
             if (now < endTime)
             {
@@ -489,7 +489,7 @@ namespace Business
         public string TimesOut()
         {
             string ret = "timesNotOut";
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)){
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1)){
                 GetGameResultByTimeOut();
             }
             return ret;
@@ -514,12 +514,12 @@ namespace Business
                 aliveSurvivors.Trim(',');
                 Store.ActiveGame.Result = aliveSurvivors + "won !";
                 EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result+"hola");
             }else if(aliveSurvivors == "")
             {
                 Store.ActiveGame.Result = "Nobody won :(";
                 EndGame();
-                throw new GameHasFinishedException(Store.ActiveGame.Result);
+                throw new GameHasFinishedException(Store.ActiveGame.Result+"hola");
             }
         }
 
