@@ -183,7 +183,6 @@ namespace Business
             }
         }
 
-
         private void JoinPlayerToGame(Player loggedPlayer)
         {
             if (Store.ActiveGame.Players.Count < 4)
@@ -271,12 +270,15 @@ namespace Business
                     throw new GameHasFinishedException(Store.ActiveGame.Result);
                 }
                 Player player = GetLoggedPlayer(usernameFrom);
+                if (!player.isAlive) throw new LoggedPlayerIsDeadException();
                 CheckRightTurn(player);
                 List<string> ret = new List<string>();
                 ret = TranslateAndDoAction(player, action);
                 int x = GetLoggedPlayer(usernameFrom).Position.X;
                 int y = GetLoggedPlayer(usernameFrom).Position.Y;
                 ret = ret.Concat(GetNearPlayers(x, y)).ToList();
+                CheckIfAPlayerHasDied();
+                CheckIfAPlayerHasLeftTheGame();
                 CheckIfGameHasEnded();
                 return ret;
             }
@@ -301,7 +303,6 @@ namespace Business
         private List<string> TranslateAndDoAction(Player player, string cmd)
         {
             List<string> ret = new List<string>();
-            if (!player.isAlive) throw new LoggedPlayerIsDeadException();
             string aux = cmd.Replace(" ", String.Empty).ToUpper();
             if (aux.Length < 5) throw new ActionException("Invalid action format");
             string action = aux.Substring(0, 3);

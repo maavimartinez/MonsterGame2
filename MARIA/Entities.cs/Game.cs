@@ -8,6 +8,10 @@ namespace Entities
     {
         public List<Player> Players { get; set; }
 
+        public List<string> PlayersThatLeft { get; set; }
+
+        public List<string> PlayersThatDied { get; set; }
+
         public DateTime StartTime { get; set; }
 
         public int  LimitJoiningTime { get; set; }
