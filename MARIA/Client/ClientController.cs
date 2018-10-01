@@ -22,6 +22,7 @@ namespace Client
         private Connection TimeControllerConnection { get; set; }
         private bool timesOut = false;
         private bool exitGame = false;
+        private bool playerIsDead = false;
         private Thread timer;
 
         public ClientController()
@@ -215,6 +216,7 @@ namespace Client
 
         private void Play()
         {
+            playerIsDead = false;
             exitGame = false;
             timesOut = false;
             int input = Menus.SelectRoleMenu();
@@ -260,9 +262,9 @@ namespace Client
 
                     string myAction = Input.RequestInput();
 
-                    if (exitGame || timesOut) break; //PONER QUE ESTA MAL
+                    if (exitGame || timesOut) break;
 
-                    if (myAction.Equals("exit"))
+                    if (myAction.Equals("exit") && !playerIsDead)
                     {
                         RemovePlayerFromGame();
                         exitGame = true;
@@ -280,6 +282,10 @@ namespace Client
                         }
                         else if (sendActionResponse.IsInvalidAction())
                         {
+                            if (sendActionResponse.ErrorMessage() == "You are dead and can no longer play")
+                            {
+                                playerIsDead = true;
+                            }
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             Console.WriteLine("Action: ");
                         }
@@ -296,6 +302,7 @@ namespace Client
                         }
                     }
                 }
+                if()
             }
             else
             {
@@ -334,7 +341,6 @@ namespace Client
                 {
                     Console.WriteLine("Active Game time's over!. You can now join a new game.");
                     Console.WriteLine(sendActionResponse.ErrorMessage());
-                    Console.WriteLine("Please type exit to return to the Main Menu");
                     exitGame = true;
                     timesOut = true;
                     timer = null;

@@ -9,7 +9,7 @@ namespace Persistence
     {
         private List<Client> Clients { get; set; }
 
-        public List<Player> AllPlayers { get; set; } //porque podes elegir un rol, crea un player pero no unido a la partida
+        public List<Player> AllPlayers { get; set; }
 
         public Game ActiveGame { get; set; }
 
