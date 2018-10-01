@@ -288,7 +288,7 @@ namespace Business
             List<string> ret = new List<string>();
             if (!player.isAlive) throw new LoggedPlayerIsDeadException();
             string aux = cmd.Replace(" ", String.Empty).ToUpper();
-            if (aux.Length < 5) throw new ActionException("Invalid action format"); //ESTO NO ANDA BIN SI EL USERNAME ES DE UNA LETRA
+            if (aux.Length < 5) throw new ActionException("Invalid action format");
             string action = aux.Substring(0, 3);
             string sndParameter = aux.Substring(3);
             if (action.Equals("MOV"))
@@ -474,7 +474,7 @@ namespace Business
         public string TimesOut()
         {
             string ret = "timesNotOut";
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)){
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1)){
                 GetGameResultByTimeOut();
             }
             return ret;
