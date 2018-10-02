@@ -1,5 +1,3 @@
-using System;
-
 namespace Entities
 {
     public class Cell

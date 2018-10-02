@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Protocol;
-using UI;
 using System.Configuration;
 using System.Threading;
 using System.Linq;
+using Protocol;
+using UI;
+
 
 namespace Client
 {
