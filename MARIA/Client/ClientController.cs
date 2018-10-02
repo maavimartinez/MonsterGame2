@@ -468,5 +468,10 @@ namespace Client
             return near;
         }
 
+        private void PrepareSendingImage()
+        {
+            string path = @"c:\temp\MyTest.txt";
+        }
+
     }
 }
