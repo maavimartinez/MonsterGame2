@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 namespace Business
 {
 
-    public class ActionController
+    public class ActionLogic
     {
         const int RADIUS = 1;
         const int WIDTH = 8;
@@ -19,7 +19,7 @@ namespace Business
 
         private Store Store { get; set; }
 
-        public ActionController(Store store)
+        public ActionLogic(Store store)
         {
             Store = store;
         }

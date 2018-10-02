@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActionController.cs" />
+    <Compile Include="ActionLogic.cs" />
     <Compile Include="Exceptions\ActionException.cs" />
     <Compile Include="Exceptions\CellAlreadyContainsAPlayer.cs" />
     <Compile Include="Exceptions\FullGameException.cs" />
@@ -50,11 +50,12 @@
     <Compile Include="Exceptions\WaitForTurnException.cs" />
     <Compile Include="Exceptions\RoleNotChosenException.cs" />
     <Compile Include="Exceptions\SamePlaceMovementException.cs" />
-    <Compile Include="GameController.cs" />
+    <Compile Include="GameLogic.cs" />
     <Compile Include="Exceptions\BusinessException.cs" />
     <Compile Include="Exceptions\ClientAlreadyConnectedException.cs" />
     <Compile Include="Exceptions\ClientNotConnectedException.cs" />
     <Compile Include="Exceptions\RecordNotFoundException.cs" />
+    <Compile Include="PlayerLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

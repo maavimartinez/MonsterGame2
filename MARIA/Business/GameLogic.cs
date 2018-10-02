@@ -9,12 +9,13 @@ using System.Linq;
 
 namespace Business
 {
-    public class GameController
+    public class GameLogic
     {
 
         private Store Store { get; set; }
         private Server Server { get; set; }
-        private ActionController ActionController { get; set; }
+        private ActionLogic ActionLogic { get; set; }
+        private PlayerLogic PlayerLogic { get; set; }
         private string ActiveGameResult { get; set; }
 
         private readonly object loginLock = new object();
@@ -23,11 +24,12 @@ namespace Business
         private readonly object doActionLock = new object();
         private readonly object removePlayerFromGameLock = new object();
 
-        public GameController(Store store)
+        public GameLogic(Store store)
         {
             Store = store;
             Server = new Server();
-            ActionController = new ActionController(store);
+            ActionLogic = new ActionLogic(Store);
+            PlayerLogic = new PlayerLogic(Store);
         }
 
         public string Login(Client client)
@@ -124,39 +126,11 @@ namespace Business
         public void SelectRole(Client loggedClient, string role)
         {
 
-            lock(selectRoleLock)
+            lock (selectRoleLock)
             {
                 if (loggedClient == null)
                     throw new ClientNotConnectedException();
-                CreatePlayerWithRole(loggedClient, role);
-            }
-        }
-
-        private void CreatePlayerWithRole(Client loggedClient, string role)
-        {
-            Player player;
-            if(role == "Survivor")
-            {
-                CheckIfGameHasMonster();
-                player = new Survivor();
-            }else
-            {
-                player = new Monster();
-            }
-            player.Client = loggedClient;
-            Store.AllPlayers.Add(player);
-        }
-
-        private void CheckIfGameHasMonster()
-        {
-            if (Store.ActiveGame != null && Store.ActiveGame.Players.Count() == 3)
-            {
-                int countMonsters = 0;
-                foreach (Player pl in Store.ActiveGame.Players)
-                {
-                    if (pl is Monster) countMonsters++;
-                }
-                if (countMonsters == 0) throw new NoMonstersInGameException();
+                PlayerLogic.SelectRole(loggedClient, role);
             }
         }
 
@@ -167,7 +141,7 @@ namespace Business
                 Player logged = Store.GetLoggedPlayer(usernameFrom);
                 if (logged == null) throw new RoleNotChosenException();
                 InitializeGame();
-                JoinPlayerToGame(logged);
+                PlayerLogic.JoinPlayerToGame(logged);
             }
         }
 
@@ -184,68 +158,6 @@ namespace Business
             }
         }
 
-        private void JoinPlayerToGame(Player loggedPlayer)
-        {
-            if (Store.ActiveGame.Players.Count < 4)
-            {
-                Store.ActiveGame.Players.Add(loggedPlayer);
-                loggedPlayer.NumOfActions = GetMaxTurn();
-                LocatePlayersInBoard();
-            }
-            else if(TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
-            {
-                var remainingTime = DateTime.Now - Store.ActiveGame.StartTime;
-                throw new FullGameException("Game is full, try again in " + remainingTime.ToString());
-            }else
-            {
-                var remainingTime = DateTime.Now - Store.ActiveGame.StartTime;
-                throw new FullGameException("You can no longer join this game, try again in " + remainingTime.ToString());
-            }
-        }
-
-        private void LocatePlayersInBoard()
-        {
-            foreach(Player pl in Store.ActiveGame.Players)
-            {
-                if(pl.Position == null)
-                {
-                    int[] pos = GetPlayerPosition();
-                    pl.Position = Store.Board.Cells[pos[0], pos[1]];
-                    Store.Board.Cells[pos[0],pos[1]].Player = pl;
-                }
-            }
-        }
-
-        private int[] GetPlayerPosition()
-        {
-            int[] pos = new int[2];
-            Random ran = new Random();
-            bool exit = false;
-            while(!exit)
-            {
-                int x = ran.Next(0, 8);
-                int y = ran.Next(0, 8);
-                if(Store.Board.Cells[x,y].Player == null)
-                {
-                    pos[0] = x;
-                    pos[1] = y;
-                    exit = true;
-                }
-            }
-            return pos;
-        }
-
-        private int GetMaxTurn()
-        {
-            int max = 0;
-            foreach (Player pl in Store.ActiveGame.Players)
-            {
-                if (pl.NumOfActions > max) max = pl.NumOfActions;
-            }
-            if (max % 2 == 1) max = max - 1;
-            return max;
-        }
-
         public List<string> DoAction(string usernameFrom, string action)
         {
             lock (doActionLock)
@@ -258,7 +170,7 @@ namespace Business
                 }
                 Player player = GetLoggedPlayer(usernameFrom);
                 if (!player.isAlive) throw new LoggedPlayerIsDeadException();
-                ret = ret.Concat(ActionController.DoAction(player, action)).ToList();
+                ret = ret.Concat(ActionLogic.DoAction(player, action)).ToList();
                 if (CheckIfGameHasEnded() != null) ret = ret.Concat(CheckIfGameHasEnded()).ToList();
                 return ret;
             }

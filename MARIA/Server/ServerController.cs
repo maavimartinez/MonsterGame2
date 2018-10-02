@@ -11,11 +11,11 @@ namespace Server
 {
     public class ServerController
     {
-        private readonly GameController gameController;
+        private readonly GameLogic gameLogic;
 
-        public ServerController(GameController gameController)
+        public ServerController(GameLogic gameLogic)
         {
-            this.gameController = gameController;
+            this.gameLogic = gameLogic;
         }
 
         public void InvalidCommand(Connection connection)
@@ -29,7 +29,7 @@ namespace Server
             try
             {
                 var client = new Client(request.Username(), request.Password());
-                string token = gameController.Login(client);
+                string token = gameLogic.Login(client);
 
                 object[] response = string.IsNullOrEmpty(token)
                     ? BuildResponse(ResponseCode.NotFound, "Client not found")
@@ -47,7 +47,7 @@ namespace Server
             try
             {
                 Client loggedUser = CurrentClient(request);
-                List<Player> connectedUsers = gameController.GetLoggedPlayers();
+                List<Player> connectedUsers = gameLogic.GetLoggedPlayers();
 
                 string[] connectedUsernames =
                     connectedUsers.Where(player => !player.Client.Equals(loggedUser)).Select(c => c.Client.Username)
@@ -70,7 +70,7 @@ namespace Server
             try
             {
                 Client loggedUser = CurrentClient(request);
-                List<Client> clients = gameController.GetClients();
+                List<Client> clients = gameLogic.GetClients();
 
                 string[] clientsUsernames =
                     clients.Where(client => !client.Equals(loggedUser)).Select(c => c.Username)
@@ -93,7 +93,7 @@ namespace Server
             try
             {
                 Client loggedUser = CurrentClient(request);
-                List<Client> clients = gameController.GetLoggedClients();
+                List<Client> clients = gameLogic.GetLoggedClients();
 
                 string[] clientsUsernames =
                     clients.Select(c => c.Username)
@@ -119,7 +119,7 @@ namespace Server
 
                 string role = request.Role();
 
-                gameController.SelectRole(loggedClient, role);
+                gameLogic.SelectRole(loggedClient, role);
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok));
             }
@@ -139,11 +139,11 @@ namespace Server
             {
                 Client loggedUser = CurrentClient(request);
 
-                gameController.JoinGame(loggedUser.Username);
+                gameLogic.JoinGame(loggedUser.Username);
 
                 List<string> response = new List<string>();
                 response.Add(GetPlayerPosition(loggedUser.Username));
-                List<string> onGameUsernames = gameController.GetOnGameUsernamesAndStatus();
+                List<string> onGameUsernames = gameLogic.GetOnGameUsernamesAndStatus();
                 response = response.Concat(onGameUsernames).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
@@ -176,9 +176,9 @@ namespace Server
                 string action = request.Action();
 
                 List<string> answer = new List<string>();
-                answer = answer.Concat(gameController.DoAction(usernameFrom, action)).ToList();
+                answer = answer.Concat(gameLogic.DoAction(usernameFrom, action)).ToList();
                 answer.Insert(0,GetPlayerPosition(loggedUser.Username));
-                answer = answer.Concat(gameController.GetOnGameUsernamesAndStatus()).ToList();
+                answer = answer.Concat(gameLogic.GetOnGameUsernamesAndStatus()).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, answer.ToArray()));
             }
@@ -200,18 +200,11 @@ namespace Server
             }
         }
 
-        private string GetPlayerPosition(string username)
-        {
-            string pos;
 
-            Player loggedPlayer = gameController.GetLoggedPlayer(username);
-            pos = loggedPlayer.Position.X + "!" + loggedPlayer.Position.Y;
-            return pos;
-        }
 
         public void DisconnectClient(Connection connection, Request request)
         {
-            gameController.DisconnectClient(request.UserToken());
+            gameLogic.DisconnectClient(request.UserToken());
             connection.SendMessage(BuildResponse(ResponseCode.Ok, "Client disconnected"));
         }
 
@@ -219,7 +212,7 @@ namespace Server
         {
             try
             {
-                List<string> timesOut = gameController.TimesOut();
+                List<string> timesOut = gameLogic.TimesOut();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, timesOut.ToArray()));
 
@@ -245,7 +238,7 @@ namespace Server
                 Client loggedUser = CurrentClient(request);
                 string usernameFrom = loggedUser.Username;
 
-                List<string> response = gameController.RemovePlayerFromGame(usernameFrom);
+                List<string> response = gameLogic.RemovePlayerFromGame(usernameFrom);
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
             }
@@ -261,7 +254,16 @@ namespace Server
 
         private Client CurrentClient(Request request)
         {
-            return gameController.GetLoggedClient(request.UserToken());
+            return gameLogic.GetLoggedClient(request.UserToken());
+        }
+
+        private string GetPlayerPosition(string username)
+        {
+            string pos;
+
+            Player loggedPlayer = gameLogic.GetLoggedPlayer(username);
+            pos = loggedPlayer.Position.X + "!" + loggedPlayer.Position.Y;
+            return pos;
         }
 
         private object[] BuildResponse(int responseCode, params object[] payload)

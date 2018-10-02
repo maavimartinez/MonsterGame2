@@ -26,11 +26,11 @@ namespace Server
             int port = GetServerPortFromConfigFile();
             string ip = GetServerIpFromConfigFile();
             server.Start(ip, port);
-            var gameController = new GameController(new Store());
+            var gameLogic = new GameLogic(new Store());
 
             var thread = new Thread(() =>
             {
-                var router = new Router(new ServerController(gameController));
+                var router = new Router(new ServerController(gameLogic));
                 while (!endServer)
                 {
                     try
@@ -66,7 +66,7 @@ namespace Server
             {
                 int option = Menus.ServerMainMenu();
 
-                GoToMenuOption(option, gameController);
+                GoToMenuOption(option, gameLogic);
 
                 if (option == 3)
                 {
@@ -124,7 +124,7 @@ namespace Server
         }
 
 
-        private static void GoToMenuOption(int option, GameController controller)
+        private static void GoToMenuOption(int option, GameLogic controller)
         {
             if (option == 1)
                 if (controller.GetClients().Count == 0)
