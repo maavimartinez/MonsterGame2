@@ -511,7 +511,7 @@ namespace Client
 
                         string converted = Encoding.UTF8.GetString(parts, 0, parts.Length);
 
-
+                        //prueba la reconversion q se va a hacer en serverController
                         byte[] receivedParts = Encoding.ASCII.GetBytes(converted);
 
                         SocketConnection.SendMessage(BuildRequest(command, converted));
