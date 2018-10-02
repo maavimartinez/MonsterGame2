@@ -12,7 +12,9 @@
         DoAction,
         TimesOut,
         RemovePlayerFromGame,
-        SendPicture,
+        ReadyToSendPicture,
+        SendPicturePart,
+        SendLastPicturePart,
         CheckIfGameHasFinished,
         GetResultByTimesOut
     }

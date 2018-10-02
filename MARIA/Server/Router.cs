@@ -54,14 +54,20 @@ namespace Server
                         case Command.RemovePlayerFromGame:
                             serverController.RemovePlayerFromGame(conn, request);
                             break;
-                        case Command.SendPicture:
-                            serverController.SendPicture(conn, request);
-                            break;
                         case Command.CheckIfGameHasFinished:
                             serverController.CheckIfGameHasFinished(conn, request);
                             break;
                         case Command.GetResultByTimesOut:
                             serverController.GetResultByTimesOut(conn, request);
+                            break;
+                        case Command.ReadyToSendPicture:
+                            serverController.ReadyToSendPicture(conn, request);
+                            break;
+                        case Command.SendPicturePart:
+                            serverController.SendPicturePart(conn, request);
+                            break;
+                        case Command.SendLastPicturePart:
+                            serverController.SendLastPicturePart(conn, request);
                             break;
                         default:
                             serverController.InvalidCommand(conn);

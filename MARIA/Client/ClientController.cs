@@ -47,7 +47,7 @@ namespace Client
             {
                 Entities.Client client = AskForCredentials();
                 SocketConnection = clientProtocol.ConnectToServer();
-                PrepareSendingImage();
+                PrepareSendingImage(client.Username);
                 object[] request = BuildRequest(Command.Login, client.Username, client.Password);
                 SocketConnection.SendMessage(request);
                 var response = new Response(SocketConnection.ReadMessage());
@@ -469,29 +469,57 @@ namespace Client
             return near;
         }
 
-        private void PrepareSendingImage()
-        {
-            //Esta foto pesa 54 kb
-            string path = @"C:\Users\Usuario\Desktop\03.png";
+         private void PrepareSendingImage(string username)
+         {
+             //Esta foto pesa 54 kb, va de ejemplo
+             string path = @"C:\Users\Usuario\Desktop\03.png";
 
-            FileInfo fileInfo = new FileInfo(path);
+             FileInfo fileInfo = new FileInfo(path);
 
-            //Osea 54593 bytes
-            byte[] data = new byte[fileInfo.Length];
+             //Osea 54593 bytes
+             byte[] data = new byte[fileInfo.Length];
 
-            int totalLength = data.Length;
+             int totalLength = data.Length;
 
-            // Load a filestream and put its content into the byte[]
-            using (FileStream fs = fileInfo.OpenRead())
+            byte[] parts = new byte[9999];
+
+            Command command = Command.SendPicturePart;
+
+            int times = totalLength / 9999;
+
+            SocketConnection.SendMessage(BuildRequest(Command.ReadyToSendPicture, username, totalLength, path));
+            var response = new Response(SocketConnection.ReadMessage());
+
+            if (response.HadSuccess())
             {
-                var read = 0;
-                while(read < totalLength)
+                // Load a filestream and put its content into the byte[]
+                using (FileStream fs = fileInfo.OpenRead())
                 {
-                    read += fs.Read(data, read, 9999);
-                    Socket.send(//mis bytes hasta ahora)
-                }
-            }
-        }
+                    var read = 0;
+                    while (read < totalLength)
+                    {
+                        if (times < 1)
+                        {
+                            command = Command.SendLastPicturePart;
+                        }
+                        read += fs.Read(data, read, 9999);
+                        Array.Copy(data, 0, parts, 0, 9999);
 
+                        //Socket send mis bytes hasta ahora
+
+                        //NO SE COMO PASAR EL ARRAY DE BYTES parts en la request
+                        SocketConnection.SendMessage(BuildRequest(command, parts.ToArray()));
+                        var keepSendingResponse = new Response(SocketConnection.ReadMessage());
+
+                        //Clear el array q mando
+                        Array.Clear(parts, 0, 9999);
+                        times--;
+                    }
+                }
+            }else
+            {
+                Console.WriteLine(response.ErrorMessage());
+            }
+         }
     }
 }

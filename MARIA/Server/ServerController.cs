@@ -4,6 +4,7 @@ using Business;
 using Business.Exceptions;
 using Entities;
 using System.Net.Sockets;
+using System;
 using System.IO;
 using Protocol;
 
@@ -14,6 +15,14 @@ namespace Server
     {
 
         private readonly GameLogic gameLogic;
+
+        private byte[] picture;
+
+        private string picturesUsername;
+
+        private string path;
+
+        private int parts = 0;
 
         public ServerController(GameLogic gameLogic)
         {
@@ -150,19 +159,7 @@ namespace Server
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
             }
-            catch (RecordNotFoundException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
-            }
             catch (ClientNotConnectedException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }
-            catch (RoleNotChosenException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }
-            catch (FullGameException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
@@ -291,15 +288,34 @@ namespace Server
         }
 
 
-        public void SendPicture(Connection connection, Request request)
+        public void SendPicturePart(Connection connection, Request request)
+        {
+            //NO SE EN Q FORMATO VIENE MI ARRAY DE BYTES DE LA FOTO
+
+          //  byte[] receivedParts = request.Parts();
+            if (parts == 0)
+            {
+                //Array.Copy(picture, parts, receivedParts, 0, 9999);
+            }else
+            {
+               // Array.Copy(picture, parts + 1, receivedParts, 0, 9999);
+            }
+
+            parts += parts + 9999;
+
+            connection.SendMessage(BuildResponse(ResponseCode.Ok));
+
+        }
+
+        public void SendLastPicturePart(Connection connection, Request request)
         {
 
-            const int bufsize = 8192;
+            //Aca pongo la ultima pieza y armo la foto y la guardo en el directorio.
 
-            var buffer = new byte[bufsize];
+     //       var buffer = new byte[bufsize];
             // NetworkStream ns = socket.GetStream();
 
-            string s = request.Picture();
+       //     string s = request.Picture();
 
             /* using (FileStream s = request.Picture())
              {
@@ -309,6 +325,15 @@ namespace Server
                      s.Write(buffer, 0, actuallyRead);
                  }*/
 
+        }
+
+        public void ReadyToSendPicture(Connection connection, Request request)
+        {
+            picture = new byte[Int32.Parse(request.PictureLength())];
+            picturesUsername = request.Username();
+            path = request.PicturePath();
+
+            connection.SendMessage(BuildResponse(ResponseCode.Ok));
         }
 
         private Client CurrentClient(Request request)
