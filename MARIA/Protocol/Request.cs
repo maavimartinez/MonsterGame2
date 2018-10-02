@@ -1,6 +1,4 @@
-﻿using Business;
-
-namespace Protocol
+﻿namespace Protocol
 {
     public class Request
     {

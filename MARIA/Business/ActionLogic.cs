@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Entities;
-using Business.Exceptions;
-using Persistence;
 using System.Text.RegularExpressions;
+using Business.Exceptions;
+using Entities;
+using Persistence;
+
 
 namespace Business
 {

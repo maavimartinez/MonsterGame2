@@ -5,8 +5,6 @@ using UI;
 using System.Configuration;
 using System.Threading;
 using System.Linq;
-using Entities;
-
 
 namespace Client
 {
