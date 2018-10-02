@@ -191,12 +191,20 @@ namespace Business
 
         public List<string> TimesOut()
         {
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)){
+           // if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1)){
                 return GetGameResultByTimeOut();
+            //}
+            //List<string> ret = new List<string>();
+            //ret.Add("timesNotOut");
+            //return ret;
+        }
+
+        public void TimesOut()
+        {
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1))
+            {
+                throw new TimesOutException("");
             }
-            List<string> ret = new List<string>();
-            ret.Add("timesNotOut");
-            return ret;
         }
 
         public List<string> GetGameResultByTimeOut()
@@ -218,7 +226,8 @@ namespace Business
                 aliveSurvivors.Trim(',');
                 ActiveGameResult = aliveSurvivors + " won !";
                 return EndGame();
-            }else if(aliveSurvivors == "")
+            }
+            else if(aliveSurvivors == "")
             {
                 ActiveGameResult = "Nobody won :(";
                 return EndGame();
@@ -287,7 +296,7 @@ namespace Business
                 List<string> ret = new List<string>();
                 ret.Add("FINISHED");
                 ret.Add(ActiveGameResult.ToUpper());
-                return ret;             
+                return ret;
             }
             return null;
         }

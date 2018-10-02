@@ -13,6 +13,7 @@
         TimesOut,
         RemovePlayerFromGame,
         SendPicture,
-        CheckIfGameHasFinished
+        CheckIfGameHasFinished,
+        GetResultByTimesOut
     }
 }

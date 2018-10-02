@@ -144,6 +144,10 @@ namespace Protocol
                 return false;
             }
         }
+        public bool GameHasFinished()
+        {
+            return HasCode(ResponseCode.GameFinished);
+        }
 
     }
 }
