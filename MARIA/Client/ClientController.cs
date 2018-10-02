@@ -375,7 +375,6 @@ namespace Client
 
                 if (sendActionResponse.GameHasFinished())
                 {
-                    //El tiempo termino, muestro el resultado por tiempo terminado
                     GetResultByTimesOut();
                 }
                     //Else{ no entiendo cual seria el otro caso, el tiempo no termino y ??????? el resultado no se muestra en el Doaction y listo?

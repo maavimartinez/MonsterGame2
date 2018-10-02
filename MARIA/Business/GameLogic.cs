@@ -191,7 +191,7 @@ namespace Business
 
         public void TimesOut()
         {
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1))
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(10))
             {
                 throw new TimesOutException("");
             }
@@ -272,7 +272,7 @@ namespace Business
                 ActiveGameResult = aliveSurvivors + " won !";
                 return EndGame();
             }
-            else if (alivePlayers == 1 && aliveSurvivors == "")
+            else if (alivePlayers == 1 && aliveSurvivors == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
             {
                 aliveMonsters = aliveMonsters.Trim(',');    
                 ActiveGameResult = aliveMonsters + " won !";
