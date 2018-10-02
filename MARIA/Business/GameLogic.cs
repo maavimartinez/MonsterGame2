@@ -189,16 +189,6 @@ namespace Business
             }
         }
 
-        public List<string> TimesOut()
-        {
-           // if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1)){
-                return GetGameResultByTimeOut();
-            //}
-            //List<string> ret = new List<string>();
-            //ret.Add("timesNotOut");
-            //return ret;
-        }
-
         public void TimesOut()
         {
             if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(1))
