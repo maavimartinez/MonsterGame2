@@ -2,8 +2,10 @@
 
 namespace UI
 {
+
     public static class Input
     {
+
         public static string RequestInput()
         {
             string input = "";
@@ -72,4 +74,5 @@ namespace UI
         }
 
     }
+
 }

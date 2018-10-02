@@ -1,6 +1,4 @@
-﻿using Business;
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Protocol
@@ -14,17 +12,10 @@ namespace Protocol
         private string MyResponseCode => responsePackage[0];
 
         private int Code {
-            get
-            {
-               return Int32.Parse(MyResponseCode);
-            }
-            set
-            {
-
-            }
+            get{return Int32.Parse(MyResponseCode);}
+            set{}
         }
         
-
         public Response(string[] response)
         {
             responsePackage = response;
@@ -70,7 +61,6 @@ namespace Protocol
             return responsePackage[1];
         }
 
-
         public List<string> Messages()
         {
             var messages = new List<string>();
@@ -81,7 +71,6 @@ namespace Protocol
             return messages;
         }
   
-
         public List<string> UserList()
         {
             var users = new List<string>();
@@ -90,8 +79,37 @@ namespace Protocol
             return users;
         }
 
+        public List<string> GetOnGameUsernamesAndStatus()
+        {
+            var ret = new List<string>();
+            for (int i = 3; i < responsePackage.Length; i++)
+            {
+                ret.Add(responsePackage[i]);
+            }
+            return ret;
+        }
 
         public List<string> GetDoActionResponse()
+        {
+            var ret = new List<string>();
+            for (int i = 1; i < responsePackage.Length; i++)
+            {
+                ret.Add(responsePackage[i]);
+            }
+            return ret;
+        }
+
+        public List<string> GetTimeOutResponse()
+        {
+            var ret = new List<string>();
+            for (int i = 1; i < responsePackage.Length; i++)
+            {
+                ret.Add(responsePackage[i]);
+            }
+            return ret;
+        }
+
+        public List<string> GetRemovePlayerFromGameResponse()
         {
             var ret = new List<string>();
             for (int i = 1; i < responsePackage.Length; i++)
@@ -109,11 +127,6 @@ namespace Protocol
         public bool IsInvalidAction()
         {
             return HasCode(ResponseCode.InvalidAction);
-        }
-
-        public bool GameHasFinished()
-        {
-            return HasCode(ResponseCode.GameFinished);
         }
 
         private bool HasCode(int responseCode)

@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Business;
 using Persistence;
 using Protocol;
 using UI;
-using System.Net.Sockets;
 
 namespace Server
 {
+
     class Program
     {
 
@@ -26,11 +23,11 @@ namespace Server
             int port = GetServerPortFromConfigFile();
             string ip = GetServerIpFromConfigFile();
             server.Start(ip, port);
-            var gameController = new GameController(new Store());
+            var gameLogic = new GameLogic(new Store());
 
             var thread = new Thread(() =>
             {
-                var router = new Router(new ServerController(gameController));
+                var router = new Router(new ServerController(gameLogic));
                 while (!endServer)
                 {
                     try
@@ -66,7 +63,7 @@ namespace Server
             {
                 int option = Menus.ServerMainMenu();
 
-                GoToMenuOption(option, gameController);
+                GoToMenuOption(option, gameLogic);
 
                 if (option == 3)
                 {
@@ -124,7 +121,7 @@ namespace Server
         }
 
 
-        private static void GoToMenuOption(int option, GameController controller)
+        private static void GoToMenuOption(int option, GameLogic controller)
         {
             if (option == 1)
                 if (controller.GetClients().Count == 0)
@@ -151,10 +148,8 @@ namespace Server
                     controller.GetCurrentPlayers().ForEach(player =>
                     {
                         if (player.Client.ConnectedSince == null) return;
-                        TimeSpan timeConnected = DateTime.Now.Subtract((DateTime)player.Client.ConnectedSince);
-                        string timeConnectedFormatted = timeConnected.ToString(@"hh\:mm\:ss");
                         Console.WriteLine(
-                            $"- {player.Client.Username} \tConnected: {player.Client.ConnectionsCount} times \tConnected for: {timeConnectedFormatted}");
+                            $"- {player.Client.Username} \tConnected: {player.Client.ConnectionsCount}times");
                     });
                 } 
             }
@@ -171,5 +166,7 @@ namespace Server
             var appSettings = new AppSettingsReader();
             return (int)appSettings.GetValue("ServerPort", typeof(int));
         }
+
     }
+
 }

@@ -1,22 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Business;
 using Business.Exceptions;
-using Protocol;
 using Entities;
 using System.Net.Sockets;
 using System.IO;
+using Protocol;
 
 namespace Server
 {
+
     public class ServerController
     {
-        private readonly GameController gameController;
 
-        public ServerController(GameController gameController)
+        private readonly GameLogic gameLogic;
+
+        public ServerController(GameLogic gameLogic)
         {
-            this.gameController = gameController;
+            this.gameLogic = gameLogic;
+        }
+
+        public void InvalidCommand(Connection connection)
+        {
+            object[] response = BuildResponse(ResponseCode.BadRequest, "Unrecognizable command");
+            connection.SendMessage(response);
         }
 
         public void ConnectClient(Connection connection, Request request)
@@ -24,7 +31,7 @@ namespace Server
             try
             {
                 var client = new Client(request.Username(), request.Password());
-                string token = gameController.Login(client);
+                string token = gameLogic.Login(client);
 
                 object[] response = string.IsNullOrEmpty(token)
                     ? BuildResponse(ResponseCode.NotFound, "Client not found")
@@ -42,7 +49,7 @@ namespace Server
             try
             {
                 Client loggedUser = CurrentClient(request);
-                List<Player> connectedUsers = gameController.GetLoggedPlayers();
+                List<Player> connectedUsers = gameLogic.GetLoggedPlayers();
 
                 string[] connectedUsernames =
                     connectedUsers.Where(player => !player.Client.Equals(loggedUser)).Select(c => c.Client.Username)
@@ -65,7 +72,7 @@ namespace Server
             try
             {
                 Client loggedUser = CurrentClient(request);
-                List<Client> clients = gameController.GetClients();
+                List<Client> clients = gameLogic.GetClients();
 
                 string[] clientsUsernames =
                     clients.Where(client => !client.Equals(loggedUser)).Select(c => c.Username)
@@ -88,7 +95,7 @@ namespace Server
             try
             {
                 Client loggedUser = CurrentClient(request);
-                List<Client> clients = gameController.GetLoggedClients();
+                List<Client> clients = gameLogic.GetLoggedClients();
 
                 string[] clientsUsernames =
                     clients.Select(c => c.Username)
@@ -108,15 +115,17 @@ namespace Server
 
         public void SelectRole(Connection connection, Request request)
         {
-            try{
+            try
+            {
                 Client loggedClient = CurrentClient(request);
 
                 string role = request.Role();
 
-                gameController.SelectRole(loggedClient, role);
+                gameLogic.SelectRole(loggedClient, role);
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok));
-            }catch(ClientNotConnectedException e)
+            }
+            catch (ClientNotConnectedException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
@@ -132,11 +141,14 @@ namespace Server
             {
                 Client loggedUser = CurrentClient(request);
 
-                gameController.JoinGame(loggedUser.Username);
+                gameLogic.JoinGame(loggedUser.Username);
 
-                string playerPosition = GetPlayerPosition(loggedUser.Username);
+                List<string> response = new List<string>();
+                response.Add(GetPlayerPosition(loggedUser.Username));
+                List<string> onGameUsernames = gameLogic.GetOnGameUsernamesAndStatus();
+                response = response.Concat(onGameUsernames).ToList();
 
-                connection.SendMessage(BuildResponse(ResponseCode.Ok, playerPosition));
+                connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
             }
             catch (RecordNotFoundException e)
             {
@@ -154,7 +166,6 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
-
         }
 
         public void DoAction(Connection connection, Request request)
@@ -167,12 +178,9 @@ namespace Server
                 string action = request.Action();
 
                 List<string> answer = new List<string>();
-                
-                List<string> aux = gameController.DoAction(usernameFrom, action);
-
-                answer.Add(GetPlayerPosition(loggedUser.Username));
-
-                answer = answer.Concat(aux).ToList();
+                answer = answer.Concat(gameLogic.DoAction(usernameFrom, action)).ToList();
+                answer.Insert(0, GetPlayerPosition(loggedUser.Username));
+                answer = answer.Concat(gameLogic.GetOnGameUsernamesAndStatus()).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, answer.ToArray()));
             }
@@ -184,14 +192,11 @@ namespace Server
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
             }
-            catch (GameHasFinishedException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message)); //no se si esta bien que sea una exception
-            }
             catch (ActionException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.InvalidAction, e.Message));
-            }catch(BusinessException e)
+            }
+            catch (BusinessException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
             }
@@ -199,14 +204,86 @@ namespace Server
 
         public void DisconnectClient(Connection connection, Request request)
         {
-            gameController.DisconnectClient(request.UserToken());
+            gameLogic.DisconnectClient(request.UserToken());
             connection.SendMessage(BuildResponse(ResponseCode.Ok, "Client disconnected"));
         }
 
-        public void InvalidCommand(Connection connection)
+        public void TimesOut(Connection connection, Request request)
         {
-            object[] response = BuildResponse(ResponseCode.BadRequest, "Unrecognizable command");
-            connection.SendMessage(response);
+            try
+            {
+                List<string> timesOut = gameLogic.TimesOut();
+
+                connection.SendMessage(BuildResponse(ResponseCode.Ok, timesOut.ToArray()));
+
+                if (!timesOut[0].Equals("timesNotOut"))
+                {
+                    connection.Close();
+                }
+            }
+            catch (RecordNotFoundException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+            }
+            catch (ClientNotConnectedException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
+        }
+
+        public void RemovePlayerFromGame(Connection connection, Request request)
+        {
+            try
+            {
+                Client loggedUser = CurrentClient(request);
+                string usernameFrom = loggedUser.Username;
+
+                List<string> response = gameLogic.RemovePlayerFromGame(usernameFrom);
+
+                connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
+            }
+            catch (RecordNotFoundException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+            }
+            catch (ClientNotConnectedException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
+        }
+
+        public void SendPicture(Connection connection, Request request)
+        {
+
+            const int bufsize = 8192;
+
+            var buffer = new byte[bufsize];
+            // NetworkStream ns = socket.GetStream();
+
+            string s = request.Picture();
+
+            /* using (FileStream s = request.Picture())
+             {
+                 int actuallyRead;
+                 while ((actuallyRead = s.Read(buffer, 0, bufsize)) > 0)
+                 {
+                     s.Write(buffer, 0, actuallyRead);
+                 }*/
+
+        }
+
+        private Client CurrentClient(Request request)
+        {
+            return gameLogic.GetLoggedClient(request.UserToken());
+        }
+
+        private string GetPlayerPosition(string username)
+        {
+            string pos;
+
+            Player loggedPlayer = gameLogic.GetLoggedPlayer(username);
+            pos = loggedPlayer.Position.X + "!" + loggedPlayer.Position.Y;
+            return pos;
         }
 
         private object[] BuildResponse(int responseCode, params object[] payload)
@@ -218,107 +295,7 @@ namespace Server
             return responseList.ToArray();
         }
 
-        private Client CurrentClient(Request request)
-        {
-            return gameController.GetLoggedClient(request.UserToken());
-        }
-
-        private string GetPlayerPosition(string username)
-        {
-            string pos;
-
-            Player loggedPlayer = gameController.GetLoggedPlayer(username);
-            pos = loggedPlayer.Position.X + "!" + loggedPlayer.Position.Y;
-            return pos;
-        }
-
-
-        public void TimesOut(Connection connection, Request request)
-        {
-            try
-            {
-                string timesOut = gameController.TimesOut();
-
-                connection.SendMessage(BuildResponse(ResponseCode.Ok, timesOut));
-            }
-            catch (RecordNotFoundException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
-            }
-            catch (ClientNotConnectedException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }catch(GameHasFinishedException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
-                connection.Close();
-            }
-        }
-
-
-        public void RemovePlayerFromGame(Connection connection, Request request)
-        {
-            try
-            {
-                Client loggedUser = CurrentClient(request);
-                string usernameFrom = loggedUser.Username;
-
-                gameController.RemovePlayerFromGame(usernameFrom);
-
-                connection.SendMessage(BuildResponse(ResponseCode.Ok));
-            }
-            catch (RecordNotFoundException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
-            }
-            catch (ClientNotConnectedException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-            }
-            catch (GameHasFinishedException e)
-            {
-                connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
-            }
-        }
-
-        public void SendPicture(Connection connection, Request request)
-        {
-       
-                const int bufsize = 8192;
-
-                var buffer = new byte[bufsize];
-                // NetworkStream ns = socket.GetStream();
-
-                string s = request.Picture();
-
-                /* using (FileStream s = request.Picture())
-                 {
-                     int actuallyRead;
-                     while ((actuallyRead = s.Read(buffer, 0, bufsize)) > 0)
-                     {
-                         s.Write(buffer, 0, actuallyRead);
-                     }*/
-            
-            }
-
-
-        //      public void EndGame(Connection connection, Request request)
-        //     {
-        //          try
-        //        {
-        //           gameController.EndGame();
-
-        //           connection.SendMessage(BuildResponse(ResponseCode.Ok));
-
-        //        }
-        //         catch (RecordNotFoundException e)
-        //        {
-        //            connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
-        //        }
-        //        catch (ClientNotConnectedException e)
-        //        {
-        //             connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-        //         }
     }
+}
 
-    }
+

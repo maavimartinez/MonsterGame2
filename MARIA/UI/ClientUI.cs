@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace UI
 {
+
     public class ClientUI
     {
 
@@ -63,5 +63,7 @@ namespace UI
             Console.ReadKey();
             Console.Clear();
         }
+
     }
+
 }

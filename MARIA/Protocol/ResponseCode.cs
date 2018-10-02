@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Protocol
 {
 
@@ -11,7 +8,7 @@ namespace Protocol
 
         public static int Created = 201;
 
-        public static int GameFinished = 408;
+        public static int GameFinished = 202;
 
         public static int BadRequest = 400;
 

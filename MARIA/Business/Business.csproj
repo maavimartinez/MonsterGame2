@@ -40,21 +40,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionLogic.cs" />
     <Compile Include="Exceptions\ActionException.cs" />
     <Compile Include="Exceptions\CellAlreadyContainsAPlayer.cs" />
     <Compile Include="Exceptions\FullGameException.cs" />
-    <Compile Include="Exceptions\GameHasFinishedException.cs" />
     <Compile Include="Exceptions\LoggedPlayerIsDeadException.cs" />
     <Compile Include="Exceptions\MovementOutOfBoundsException.cs" />
     <Compile Include="Exceptions\NoMonstersInGameException.cs" />
     <Compile Include="Exceptions\WaitForTurnException.cs" />
     <Compile Include="Exceptions\RoleNotChosenException.cs" />
     <Compile Include="Exceptions\SamePlaceMovementException.cs" />
-    <Compile Include="GameController.cs" />
+    <Compile Include="GameLogic.cs" />
     <Compile Include="Exceptions\BusinessException.cs" />
     <Compile Include="Exceptions\ClientAlreadyConnectedException.cs" />
     <Compile Include="Exceptions\ClientNotConnectedException.cs" />
     <Compile Include="Exceptions\RecordNotFoundException.cs" />
+    <Compile Include="PlayerLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -65,10 +66,6 @@
     <ProjectReference Include="..\Persistence\Persistence.csproj">
       <Project>{9cc03d3b-2a1b-4d8f-8764-ea8c6e934871}</Project>
       <Name>Persistence</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UI\UI.csproj">
-      <Project>{6458c1c9-1f78-49d4-80b4-16627a0f0669}</Project>
-      <Name>UI</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

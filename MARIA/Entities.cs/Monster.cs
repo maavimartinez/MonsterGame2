@@ -1,5 +1,3 @@
-using System;
-
 namespace Entities
 {
     public class Monster : Player
@@ -7,7 +5,7 @@ namespace Entities
         public Monster()
         {
             HP = 100;
-            AP = 100;
+            AP = 10;
             isAlive = true;
         }
 

@@ -5,6 +5,7 @@ namespace Server
 {
     public class Router
     {
+
         private readonly ServerController serverController;
 
         public Router(ServerController serverController)
@@ -70,5 +71,7 @@ namespace Server
                 }
             }
         }
+
     }
+
 }
