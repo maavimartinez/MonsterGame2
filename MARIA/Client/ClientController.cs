@@ -284,7 +284,7 @@ namespace Client
                         {
                             List<string> actionResponse = sendActionResponse.GetDoActionResponse();
                             RefreshBoard(actionResponse);
-                            ShowIfGameFinished(actionResponse);
+                            ShowIfGameFinished(actionResponse,true);
                         }
                         else if (sendActionResponse.IsInvalidAction())
                         {
@@ -325,7 +325,7 @@ namespace Client
 
             if (response.HadSuccess())
             {
-                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse());
+                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse(),true);
             }
             else 
             {
@@ -376,19 +376,19 @@ namespace Client
                 {
                     if (AskServerIfGameHasFinished() == "GameNotFinished")
                     {
-                        Console.WriteLine("Active Game's time is over!. You can now join a new game.");
-                        ShowIfGameFinished(sendActionResponse.GetTimeOutResponse());
+                        ShowIfGameFinished(sendActionResponse.GetTimeOutResponse(),true);
                     }
                 }
             }
         }
 
-        private void  ShowIfGameFinished(List<string> responseMessage)
+        private void  ShowIfGameFinished(List<string> responseMessage, bool timesOut)
         {
             for(int i = 0; i< responseMessage.Count(); i++)
             {
                 if(responseMessage[i] == "FINISHED")
                 {
+                    if(timesOut) Console.WriteLine("Active Game's time is over!. You can now join a new game.");
                     Console.WriteLine(responseMessage[i + 1]);
                     exitGame = true;
                     timesOut = true;
