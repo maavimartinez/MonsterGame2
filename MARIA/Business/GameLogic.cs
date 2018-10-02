@@ -175,7 +175,7 @@ namespace Business
             }
         }
 
-        private bool TimeHasPassed(int minutes)
+        private bool TimeHasPassed(double minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
             DateTime endTime = startTime.AddMinutes(minutes);
@@ -191,7 +191,7 @@ namespace Business
 
         public void TimesOut()
         {
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(10))
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(0.4))
             {
                 throw new TimesOutException("");
             }

@@ -64,6 +64,11 @@ namespace UI
             Console.Clear();
         }
 
+        public static void ClearBoard()
+        {
+            Console.Clear();
+        }
+
     }
 
 }
