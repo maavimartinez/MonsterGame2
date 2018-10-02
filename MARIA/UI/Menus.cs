@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace UI
 {
+
     public static class Menus
     {
         
@@ -50,6 +51,6 @@ namespace UI
             return Input.SelectMenuOption("Choose an option", 1, options.Count);
         }
 
-
     }
+
 }

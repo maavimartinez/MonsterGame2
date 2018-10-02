@@ -9,6 +9,7 @@ using UI;
 
 namespace Server
 {
+
     class Program
     {
 
@@ -147,10 +148,8 @@ namespace Server
                     controller.GetCurrentPlayers().ForEach(player =>
                     {
                         if (player.Client.ConnectedSince == null) return;
-                        TimeSpan timeConnected = DateTime.Now.Subtract((DateTime)player.Client.ConnectedSince);
-                        string timeConnectedFormatted = timeConnected.ToString(@"hh\:mm\:ss");
                         Console.WriteLine(
-                            $"- {player.Client.Username} \tConnected: {player.Client.ConnectionsCount} times \tConnected for: {timeConnectedFormatted}");
+                            $"- {player.Client.Username} \tConnected: {player.Client.ConnectionsCount}times");
                     });
                 } 
             }
@@ -167,5 +166,7 @@ namespace Server
             var appSettings = new AppSettingsReader();
             return (int)appSettings.GetValue("ServerPort", typeof(int));
         }
+
     }
+
 }

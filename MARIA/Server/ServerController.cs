@@ -7,8 +7,10 @@ using Protocol;
 
 namespace Server
 {
+
     public class ServerController
     {
+
         private readonly GameLogic gameLogic;
 
         public ServerController(GameLogic gameLogic)
@@ -197,8 +199,6 @@ namespace Server
                 connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
             }
         }
-
-
 
         public void DisconnectClient(Connection connection, Request request)
         {

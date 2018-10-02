@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Entities;
 
 namespace UI
 {
+
     public static class BoardUI
     {
 
@@ -112,4 +112,5 @@ namespace UI
             }
         }
     }
+
 }
