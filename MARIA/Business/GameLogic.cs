@@ -1,11 +1,9 @@
-﻿using Business.Exceptions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System;
+using System.Linq;
+using Business.Exceptions;
 using Entities;
 using Persistence;
-using System;
-using UI;
-using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace Business
 {

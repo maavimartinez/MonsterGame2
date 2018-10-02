@@ -14,17 +14,10 @@ namespace Protocol
         private string MyResponseCode => responsePackage[0];
 
         private int Code {
-            get
-            {
-               return Int32.Parse(MyResponseCode);
-            }
-            set
-            {
-
-            }
+            get{return Int32.Parse(MyResponseCode);}
+            set{}
         }
         
-
         public Response(string[] response)
         {
             responsePackage = response;
@@ -70,7 +63,6 @@ namespace Protocol
             return responsePackage[1];
         }
 
-
         public List<string> Messages()
         {
             var messages = new List<string>();
@@ -81,7 +73,6 @@ namespace Protocol
             return messages;
         }
   
-
         public List<string> UserList()
         {
             var users = new List<string>();
@@ -99,7 +90,6 @@ namespace Protocol
             }
             return ret;
         }
-
 
         public List<string> GetDoActionResponse()
         {
