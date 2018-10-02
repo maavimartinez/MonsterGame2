@@ -10,9 +10,6 @@
         SelectRole,
         JoinGame,
         DoAction,
-        ReadAction,
-        NotifyNearPlayers,
-        NotifyMyOwnDeath,
         TimesOut,
         RemovePlayerFromGame
     }

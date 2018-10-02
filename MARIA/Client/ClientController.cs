@@ -246,23 +246,23 @@ namespace Client
 
             var response = new Response(SocketConnection.ReadMessage());
 
-            BoardUI.DrawBoard(clientUsername, response.GetPlayerPosition());
-            BoardUI.WriteOnGameUsernames(response.GetOnGameUsernames()); //cambiar de lugar cuando ponga opponents siempre
+            List<string> onGameUsernamesAndStatus = response.GetOnGameUsernamesAndStatus();
+            BoardUI.DrawBoard(clientUsername, response.GetPlayerPosition(), onGameUsernamesAndStatus);
             Console.WriteLine("Action: ");
 
             if (response.HadSuccess())
             {
-                if (timer == null)
+            /*    if (timer == null)
                 {
                     timer = new Thread(() => TimesOut());
                     timer.Start();
-                }
+                }*/
 
                 while ((!exitGame || !timesOut) && !playerIsDead)
                 {
 
                     string myAction = Input.RequestInput();
-
+                     
                     if (timesOut) break;
 
                     if (myAction.Equals("exit") )
@@ -280,7 +280,7 @@ namespace Client
                         {
                             List<string> actionResponse = sendActionResponse.GetDoActionResponse();
                             RefreshBoard(actionResponse);
-                            ShowIfGameFinished(actionResponse);
+                            CheckIfGameFinished(actionResponse);
                         }
                         else if (sendActionResponse.IsInvalidAction())
                         {
@@ -317,7 +317,7 @@ namespace Client
 
             if (response.HadSuccess())
             {
-                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse());
+                CheckIfGameFinished(response.GetRemovePlayerFromGameResponse());
             }
             else if (response.HadSuccess())
             {
@@ -336,14 +336,12 @@ namespace Client
 
                 if (sendActionResponse.HadSuccess())
                 {
-                    ShowIfGameFinished(sendActionResponse.GetTimeOutResponse());
-                    timesOut = true;
-                    timer = null;
+                    CheckIfGameFinished(sendActionResponse.GetTimeOutResponse());
                 }
             }
         }
 
-        private void ShowIfGameFinished(List<string> responseMessage)
+        private void CheckIfGameFinished(List<string> responseMessage)
         {
             for(int i = 0; i< responseMessage.Count(); i++)
             {
@@ -352,42 +350,73 @@ namespace Client
                     Console.WriteLine(responseMessage[i + 1]);
                     Console.WriteLine("Active Game's time is over!. You can now join a new game.");
                     exitGame = true;
+                    timesOut = true;
+                    timer = null;
                 }
             }
         }
 
-        private void RefreshBoard(List<string> position)
+        private void RefreshBoard(List<string> response)
         {
-            BoardUI.DrawBoard(clientUsername, position[0]);
-            ShowKillsNearPlayersAndHP(position);
+            BoardUI.DrawBoard(clientUsername, response[0], GetUsernamesAndStatus(response));
+            BoardUI.ShowHP(GetHP(response));
+            BoardUI.ShowKills(GetKills(response));
+            BoardUI.ShowNearPlayers(GetNearPlayers(response));
             Console.WriteLine("Action: ");
         }
 
-        private void ShowKillsNearPlayersAndHP(List<string> killsNearHP)
+        private List<string> GetUsernamesAndStatus(List<string> response)
         {
-            if (killsNearHP.Count > 1)
+            List<string> usernamesStatus = new List<string>();
+            for (int i = 0; i < response.Count(); i++)
             {
-                for (int i = 0; i < killsNearHP.Count; i++)
+                if (response[i].Equals("PLAYERS"))
                 {
-                    if (killsNearHP[i] == "killed")
+                    for (int j = i + 1; j < response.Count(); j++)
                     {
-                        Console.WriteLine("You have killed " + killsNearHP[i + 1] + " !");
-                    }
-                    else if (killsNearHP[i] == "near")
-                    {
-                        Console.WriteLine("You are next to: ");
-                        for(int j = i+1; j< killsNearHP.Count; j++)
-                        {
-                            Console.WriteLine(killsNearHP[j]);
-                        }
-                        i = killsNearHP.Count;
-                    }
-                    else if (killsNearHP[i] == "HP")
-                    {
-                        Console.WriteLine("HP = " + killsNearHP[i + 1]);
+                        usernamesStatus.Add(response[j]);
                     }
                 }
             }
+            return usernamesStatus;
+        }
+
+        private string GetHP(List<string> response)
+        {
+            for(int i=0; i<response.Count(); i++)
+            {
+                if (response[i].Equals("HP"))
+                    return response[i + 1];
+            }
+            return "";
+        }
+
+        private string GetKills(List<string> response)
+        {
+            for (int i = 0; i < response.Count(); i++)
+            {
+                if (response[i].Equals("KILLED"))
+                {
+                    return response[i + 1];
+                }
+            }
+            return "";
+        }
+
+        private List<string> GetNearPlayers(List<string> response)
+        {
+            List<string> near = new List<string>();
+            for (int i = 0; i < response.Count(); i++)
+            {
+                if (response[i].Equals("NEAR"))
+                {
+                    for(int j = i+1; j< response.Count(); j++)
+                    {
+                        near.Add(response[j]);
+                    }
+                }
+            }
+            return near;
         }
 
     }

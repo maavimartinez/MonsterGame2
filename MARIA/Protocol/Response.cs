@@ -90,10 +90,10 @@ namespace Protocol
             return users;
         }
 
-        public List<string> GetOnGameUsernames()
+        public List<string> GetOnGameUsernamesAndStatus()
         {
             var ret = new List<string>();
-            for (int i = 2; i < responsePackage.Length; i++)
+            for (int i = 3; i < responsePackage.Length; i++)
             {
                 ret.Add(responsePackage[i]);
             }

@@ -143,7 +143,7 @@ namespace Server
 
                 List<string> response = new List<string>();
                 response.Add(GetPlayerPosition(loggedUser.Username));
-                List<string> onGameUsernames = gameController.GetOnGameUsernames();
+                List<string> onGameUsernames = gameController.GetOnGameUsernamesAndStatus();
                 response = response.Concat(onGameUsernames).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
@@ -176,12 +176,9 @@ namespace Server
                 string action = request.Action();
 
                 List<string> answer = new List<string>();
-
-                List<string> aux = gameController.DoAction(usernameFrom, action);
-
                 answer.Add(GetPlayerPosition(loggedUser.Username));
-
-                answer = answer.Concat(aux).ToList();
+                answer = answer.Concat(gameController.DoAction(usernameFrom, action)).ToList();
+                answer = answer.Concat(gameController.GetOnGameUsernamesAndStatus()).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, answer.ToArray()));
             }

@@ -18,12 +18,12 @@ namespace Business
         private Store Store { get; set; }
         private Server Server { get; set; }
         private string ActiveGameResult { get; set; }
-        private readonly object gameLocker = new object();
-        private readonly object selectRoleLocker = new object();
-        private readonly object loginLocker = new object();
-        private readonly object actionLocker = new object();
-        private readonly object joinGameLocker = new object();
-        private readonly object doActionLocker = new object();
+
+        private readonly object loginLock = new object();
+        private readonly object selectRoleLock = new object();
+        private readonly object joinGameLock = new object();
+        private readonly object doActionLock = new object();
+        private readonly object removePlayerFromGameLock = new object();
 
         public GameController(Store store)
         {
@@ -33,7 +33,7 @@ namespace Business
 
         public string Login(Client client)
         {
-            lock (loginLocker)
+            lock (loginLock)
             {
                 if (!Store.ClientExists(client))
                     Store.AddClient(client);
@@ -48,7 +48,7 @@ namespace Business
 
         public Client GetLoggedClient(string userToken)
         {
-            lock (loginLocker)
+            lock (loginLock)
             {
                 Client loggedUser = Server.GetLoggedClient(userToken);
                 if (loggedUser == null)
@@ -59,15 +59,23 @@ namespace Business
 
         public List<Client> GetLoggedClients()
         {
-            lock (loginLocker)
+            lock (loginLock)
             {
                 return Server.GetLoggedClients();
             }
         }
 
+        public Player GetLoggedPlayer(string username)
+        {
+            lock (joinGameLock)
+            {
+                return Store.GetLoggedPlayer(username);
+            }
+        }
+
         public List<Player> GetLoggedPlayers()
         {
-            lock (loginLocker)
+            lock (loginLock)
             {
                 List<Client> loggedClients = Server.GetLoggedClients();
                 List<Player> ret = new List<Player>();
@@ -83,17 +91,9 @@ namespace Business
             }
         }
 
-        public void DisconnectClient(string token)
-        {
-            lock (loginLocker)
-            {
-                Server.DisconnectClient(token);
-            }
-        }
-
         public List<Client> GetClients()
         {
-            lock (loginLocker)
+            lock (loginLock)
             {
                 return Store.GetClients();
             }
@@ -101,31 +101,31 @@ namespace Business
 
         public List<Player> GetCurrentPlayers()
         {
-            lock (loginLocker)
+            lock (loginLock)
             {
                 try
                 {
                     return Store.ActiveGame.Players;
                 }
-                catch(NullReferenceException e)
+                catch (NullReferenceException)
                 {
                     return new List<Player>();
                 }
             }
         }
 
-        public Player GetLoggedPlayer(string username)
+        public void DisconnectClient(string token)
         {
-            lock (joinGameLocker)
+            lock (loginLock)
             {
-                return Store.GetLoggedPlayer(username);
+                Server.DisconnectClient(token);
             }
         }
 
         public void SelectRole(Client loggedClient, string role)
         {
 
-            lock(selectRoleLocker)
+            lock(selectRoleLock)
             {
                 if (loggedClient == null)
                     throw new ClientNotConnectedException();
@@ -163,23 +163,13 @@ namespace Business
 
         public void JoinGame(string usernameFrom)
         {
-            lock (joinGameLocker)
+            lock (joinGameLock)
             {
                 Player logged = Store.GetLoggedPlayer(usernameFrom);
                 if (logged == null) throw new RoleNotChosenException();
                 InitializeGame();
                 JoinPlayerToGame(logged);
             }
-        }
-
-        public List<string> GetOnGameUsernames()
-        {
-            List<string> ret = new List<string>();
-            foreach(Player pl in Store.ActiveGame.Players)
-            {
-                ret.Add(pl.Client.Username);
-            }
-            return ret;
         }
 
         private void InitializeGame()
@@ -259,20 +249,20 @@ namespace Business
 
         public List<string> DoAction(string usernameFrom, string action)
         {
-            lock (actionLocker)
+            lock (doActionLock)
             {
                 List<string> ret = new List<string>();
                 if (!Store.ActiveGame.isOn)
                 {
-                    ret.Add("Finished");
+                    ret.Add("FINISHED");
                     ret.Add(ActiveGameResult);
                 }
                 Player player = GetLoggedPlayer(usernameFrom);
                 if (!player.isAlive) throw new LoggedPlayerIsDeadException();
                 CheckRightTurn(player);
                 ret = TranslateAndDoAction(player, action);
-                int x = GetLoggedPlayer(usernameFrom).Position.X;
-                int y = GetLoggedPlayer(usernameFrom).Position.Y;
+                int x = player.Position.X;
+                int y = player.Position.Y;
                 ret = ret.Concat(GetNearPlayers(x, y)).ToList();
                 ret = ret.Concat(GetPlayerHP(player)).ToList();
                 if (CheckIfGameHasEnded() != null) ret = ret.Concat(CheckIfGameHasEnded()).ToList();
@@ -395,7 +385,7 @@ namespace Business
         public List<string> GetNearPlayers(int x, int y)
         {
             List<string> nearPlayers = new List<string>();
-            nearPlayers.Add("near");
+            nearPlayers.Add("NEAR");
 
             var lowerY = Math.Max(0, y - RADIUS);
             var upperY = Math.Min(WIDTH - 1, y + RADIUS);
@@ -440,7 +430,7 @@ namespace Business
             List<string> ret = new List<string>();
             if (!defender.isAlive)
             {
-                ret.Add("killed");
+                ret.Add("KILLED");
                 ret.Add(defender.Client.Username);
             }
             return ret;
@@ -528,19 +518,23 @@ namespace Business
 
         public List<string> RemovePlayerFromGame(string username)
         {
-            List<string> ret = new List<string>();
-            Player player = GetLoggedPlayer(username);
-            Store.ActiveGame.Players.Remove(player);
-            Store.AllPlayers.Remove(player);
-            if (Store.AllPlayers.Count > 0)
+            lock (removePlayerFromGameLock)
             {
-                return CheckIfGameHasEnded();
-            }else if(Store.AllPlayers.Count == 0)
-            {
-                ActiveGameResult = "Game has finished";
-                return EndGame();
+                List<string> ret = new List<string>();
+                Player player = GetLoggedPlayer(username);
+                Store.ActiveGame.Players.Remove(player);
+                Store.AllPlayers.Remove(player);
+                if (Store.AllPlayers.Count > 0)
+                {
+                    return CheckIfGameHasEnded();
+                }
+                else if (Store.AllPlayers.Count == 0)
+                {
+                    ActiveGameResult = "Game has finished";
+                    return EndGame();
+                }
+                return ret;
             }
-            return ret;
         }
 
         public List<string> EndGame() {
@@ -552,28 +546,23 @@ namespace Business
                 game.Result = "";
                 Store.ActiveGame.Players.Clear();
                 List<string> ret = new List<string>();
-                ret.Add("Finished");
+                ret.Add("FINISHED");
                 ret.Add(ActiveGameResult);
                 return ret;             
             }
             return null;
         }
 
-        /* FOTOS tambuffer 2048*5
-         int size = GetFileSize();
-         int parts = GetPartsToSend(size);
-         var totalRead = 0;
-         using(Filestream fs = new ...)
-         {
-            var read = 0;
-            while(read<partsize)
+        public List<string> GetOnGameUsernamesAndStatus()
+        {
+            List<string> ret = new List<string>();
+            ret.Add("PLAYERS");
+            foreach (Player pl in Store.ActiveGame.Players)
             {
-                read += fs.Read(buffer,read,partsize-read);
-            } 
-            SendSocket(buffer);
-            totalRead += read;
-            fs.Seek(totalRead);
+                string status = (pl.isAlive) ? "Alive" : "Dead";
+                ret.Add(pl.Client.Username + "(" + status + ")");
+            }
+            return ret;
         }
-         */
     }
 }
