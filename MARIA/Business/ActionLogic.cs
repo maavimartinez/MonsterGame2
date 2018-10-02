@@ -38,7 +38,9 @@ namespace Business
         private void CheckRightTurn(Player player)
         {
             int minTurn = GetMinTurn();
-            if (player.NumOfActions - minTurn == 2) throw new WaitForTurnException();
+            int difference = player.NumOfActions - minTurn;
+            bool validDifference = difference < 2;
+            if (validDifference) throw new WaitForTurnException();
         }
 
         private int GetMinTurn()

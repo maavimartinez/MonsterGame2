@@ -258,8 +258,8 @@ namespace Client
             {
                 if (timer == null)
                 {
-                    timer = new Thread(() => TimesOut());
-                    timer.Start();
+                   timer = new Thread(() => TimesOut());
+                   timer.Start();
                 }
 
                 while ((!exitGame || !timesOut) && !playerIsDead)

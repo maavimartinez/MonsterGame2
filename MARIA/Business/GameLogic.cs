@@ -223,7 +223,7 @@ namespace Business
                 ActiveGameResult = "Nobody won :(";
                 return EndGame();
             }
-            return null;
+            return new List<string>();
         }
 
         public List<string> RemovePlayerFromGame(string username)
