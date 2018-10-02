@@ -231,16 +231,22 @@ namespace Business
             {
                 List<string> ret = new List<string>();
                 Player player = GetLoggedPlayer(username);
-                Store.ActiveGame.Players.Remove(player);
-                Store.AllPlayers.Remove(player);
-                if (Store.AllPlayers.Count > 0)
+                if (player != null)
                 {
-                    return CheckIfGameHasEnded();
-                }
-                else if (Store.AllPlayers.Count == 0)
+                    Store.ActiveGame.Players.Remove(player);
+                    Store.AllPlayers.Remove(player);
+                    if (Store.AllPlayers.Count > 0)
+                    {
+                        return CheckIfGameHasEnded();
+                    }
+                    else if (Store.AllPlayers.Count == 0)
+                    {
+                        ActiveGameResult = "Game has finished";
+                        return EndGame();
+                    }
+                }else
                 {
-                    ActiveGameResult = "Game has finished";
-                    return EndGame();
+                    ret.Add("Player was not in the game");
                 }
                 return ret;
             }

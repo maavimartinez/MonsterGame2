@@ -120,7 +120,6 @@ namespace Server
             Console.WriteLine("Every thread has been closed. Good-bye.");
         }
 
-
         private static void GoToMenuOption(int option, GameLogic controller)
         {
             if (option == 1)
