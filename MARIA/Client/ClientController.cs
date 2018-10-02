@@ -8,6 +8,11 @@ using System.Threading;
 using System.Linq;
 using Entities;
 
+using System.Drawing;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+
 
 namespace Client
 {
@@ -44,6 +49,7 @@ namespace Client
             {
                 Entities.Client client = AskForCredentials();
                 SocketConnection = clientProtocol.ConnectToServer();
+                PrepareSendingImage();
                 object[] request = BuildRequest(Command.Login, client.Username, client.Password);
                 SocketConnection.SendMessage(request);
                 var response = new Response(SocketConnection.ReadMessage());
@@ -302,7 +308,7 @@ namespace Client
                         }
                     }
                 }
-                if()
+                //if()
             }
             else
             {

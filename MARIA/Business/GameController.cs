@@ -277,8 +277,8 @@ namespace Business
                 int x = GetLoggedPlayer(usernameFrom).Position.X;
                 int y = GetLoggedPlayer(usernameFrom).Position.Y;
                 ret = ret.Concat(GetNearPlayers(x, y)).ToList();
-                CheckIfAPlayerHasDied();
-                CheckIfAPlayerHasLeftTheGame();
+            //    CheckIfAPlayerHasDied();
+              //  CheckIfAPlayerHasLeftTheGame();
                 CheckIfGameHasEnded();
                 return ret;
             }

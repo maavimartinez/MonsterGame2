@@ -14,6 +14,7 @@
         NotifyNearPlayers,
         NotifyMyOwnDeath,
         TimesOut,
-        RemovePlayerFromGame
+        RemovePlayerFromGame,
+        SendPicture
     }
 }

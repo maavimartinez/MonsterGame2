@@ -42,5 +42,10 @@ namespace Protocol
             return requestObject[3];
         }
 
+        public string Picture()
+        {
+            return requestObject[2];
+        }
+
     }
 }

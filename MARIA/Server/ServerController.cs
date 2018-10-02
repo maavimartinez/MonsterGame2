@@ -6,6 +6,7 @@ using Business.Exceptions;
 using Protocol;
 using Entities;
 using System.Net.Sockets;
+using System.IO;
 
 namespace Server
 {
@@ -280,23 +281,44 @@ namespace Server
             }
         }
 
-  //      public void EndGame(Connection connection, Request request)
-   //     {
-  //          try
-    //        {
-     //           gameController.EndGame();
-     
-     //           connection.SendMessage(BuildResponse(ResponseCode.Ok));
+        public void SendPicture(Connection connection, Request request)
+        {
+       
+                const int bufsize = 8192;
 
-    //        }
-   //         catch (RecordNotFoundException e)
-    //        {
-    //            connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
-    //        }
-    //        catch (ClientNotConnectedException e)
-    //        {
-   //             connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
-   //         }
-        }
+                var buffer = new byte[bufsize];
+                // NetworkStream ns = socket.GetStream();
+
+                string s = request.Picture();
+
+                /* using (FileStream s = request.Picture())
+                 {
+                     int actuallyRead;
+                     while ((actuallyRead = s.Read(buffer, 0, bufsize)) > 0)
+                     {
+                         s.Write(buffer, 0, actuallyRead);
+                     }*/
+            
+            }
+
+
+        //      public void EndGame(Connection connection, Request request)
+        //     {
+        //          try
+        //        {
+        //           gameController.EndGame();
+
+        //           connection.SendMessage(BuildResponse(ResponseCode.Ok));
+
+        //        }
+        //         catch (RecordNotFoundException e)
+        //        {
+        //            connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+        //        }
+        //        catch (ClientNotConnectedException e)
+        //        {
+        //             connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+        //         }
+    }
 
     }

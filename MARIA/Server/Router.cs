@@ -53,6 +53,9 @@ namespace Server
                         case Command.RemovePlayerFromGame:
                             serverController.RemovePlayerFromGame(conn, request);
                             break;
+                        case Command.SendPicture:
+                            serverController.SendPicture(conn, request);
+                            break;
                         default:
                             serverController.InvalidCommand(conn);
                             break;
