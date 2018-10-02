@@ -47,7 +47,7 @@ namespace Client
             {
                 Entities.Client client = AskForCredentials();
                 SocketConnection = clientProtocol.ConnectToServer();
-            //    PrepareSendingImage();
+                PrepareSendingImage();
                 object[] request = BuildRequest(Command.Login, client.Username, client.Password);
                 SocketConnection.SendMessage(request);
                 var response = new Response(SocketConnection.ReadMessage());
@@ -471,7 +471,26 @@ namespace Client
 
         private void PrepareSendingImage()
         {
-            string path = @"c:\temp\MyTest.txt";
+            //Esta foto pesa 54 kb
+            string path = @"C:\Users\Usuario\Desktop\03.png";
+
+            FileInfo fileInfo = new FileInfo(path);
+
+            //Osea 54593 bytes
+            byte[] data = new byte[fileInfo.Length];
+
+            int totalLength = data.Length;
+
+            // Load a filestream and put its content into the byte[]
+            using (FileStream fs = fileInfo.OpenRead())
+            {
+                var read = 0;
+                while(read < totalLength)
+                {
+                    read += fs.Read(data, read, 9999);
+                    Socket.send(//mis bytes hasta ahora)
+                }
+            }
         }
 
     }
