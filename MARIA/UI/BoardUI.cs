@@ -50,7 +50,8 @@ namespace UI
         {
             Console.WriteLine("Move:   MOVLetterNumber (e.g MOVA5)");
             Console.WriteLine("Attack: ATTUsername     (e.g ATTexample)");
-            Console.WriteLine("Commands ignore case and blank spaces");
+            Console.WriteLine("- Moves can be made in all directions with radius 1.");
+            Console.WriteLine("- Commands ignore case and blank spaces");
             Console.WriteLine("");
         }
 
