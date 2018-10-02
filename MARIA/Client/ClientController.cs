@@ -304,7 +304,10 @@ namespace Client
                             RemovePlayerFromGame();
                         }
                     }
-                    //if(playerIsDead) GetWhoWonGame
+                }
+                if (playerIsDead)
+                {
+                    CheckIfGameHasFinished();
                 }
             }
             else
@@ -324,9 +327,34 @@ namespace Client
             {
                 CheckIfGameFinished(response.GetRemovePlayerFromGameResponse());
             }
-            else if (response.HadSuccess())
+            else 
             {
                 Console.WriteLine(response.ErrorMessage());
+            }
+        }
+
+        private void CheckIfGameHasFinished()
+        {
+            bool exit = false;
+            while (!exit) {
+                SocketConnection.SendMessage(BuildRequest(Command.CheckIfGameHasFinished));
+
+                var response = new Response(SocketConnection.ReadMessage());
+
+                if (response.HadSuccess())
+                {
+                    string result = response.GetGameResult();
+                    if(result != "GameNotFinished")
+                    {
+                        Console.WriteLine(result);
+                        exit = true;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(response.ErrorMessage());
+                    exit = true;
+                }
             }
         }
 

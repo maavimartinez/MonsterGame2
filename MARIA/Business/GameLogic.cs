@@ -269,7 +269,7 @@ namespace Business
             }
             else if (alivePlayers == 1 && aliveSurvivors == "")
             {
-                aliveMonsters.Trim(',');
+                aliveMonsters.Trim(',');    //aliveMonsters = ....
                 ActiveGameResult = aliveMonsters + "won !";
                 return EndGame();
             }
@@ -302,6 +302,18 @@ namespace Business
                 ret.Add(pl.Client.Username + "(" + status + ")");
             }
             return ret;
+        }
+
+        public string GetGameResult()
+        {
+            if(ActiveGameResult != "")
+            {
+                return ActiveGameResult;
+            }else
+            {
+                return "GameNotFinished";
+            }
+            
         }
     }
 }

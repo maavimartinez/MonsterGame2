@@ -51,6 +51,11 @@ namespace Protocol
             return responsePackage[1];
         }
 
+        public string GetGameResult()
+        {
+            return responsePackage[1];
+        }
+
         public string ErrorMessage()
         {
             return responsePackage[1];

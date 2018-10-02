@@ -57,6 +57,9 @@ namespace Server
                         case Command.SendPicture:
                             serverController.SendPicture(conn, request);
                             break;
+                        case Command.CheckIfGameHasFinished:
+                            serverController.CheckIfGameHasFinished(conn, request);
+                            break;
                         default:
                             serverController.InvalidCommand(conn);
                             break;

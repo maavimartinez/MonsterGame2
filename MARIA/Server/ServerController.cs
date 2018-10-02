@@ -252,6 +252,26 @@ namespace Server
             }
         }
 
+
+        public void CheckIfGameHasFinished(Connection connection, Request request)
+        {
+            try
+            {
+                string response = gameLogic.GetGameResult();
+
+                connection.SendMessage(BuildResponse(ResponseCode.Ok, response));
+            }
+            catch (RecordNotFoundException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+            }
+            catch (ClientNotConnectedException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
+        }
+
+
         public void SendPicture(Connection connection, Request request)
         {
 
