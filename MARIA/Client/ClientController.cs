@@ -397,7 +397,8 @@ namespace Client
             {
                 if(responseMessage[i] == "FINISHED")
                 {
-                    if(timesOut2) Console.WriteLine("Active Game's time is over!. You can now join a new game.");
+                    if (timesOut2)  Console.WriteLine("Active Game's time is over!. You can now join a new game.");
+                    if (!timesOut2) Console.WriteLine("Game is over! ");
                     Console.WriteLine(responseMessage[i + 1]);
                     exitGame = true;
                     timesOut = true;
