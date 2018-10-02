@@ -176,8 +176,8 @@ namespace Server
                 string action = request.Action();
 
                 List<string> answer = new List<string>();
-                answer.Add(GetPlayerPosition(loggedUser.Username));
                 answer = answer.Concat(gameController.DoAction(usernameFrom, action)).ToList();
+                answer.Insert(0,GetPlayerPosition(loggedUser.Username));
                 answer = answer.Concat(gameController.GetOnGameUsernamesAndStatus()).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, answer.ToArray()));

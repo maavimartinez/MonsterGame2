@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionController.cs" />
     <Compile Include="Exceptions\ActionException.cs" />
     <Compile Include="Exceptions\CellAlreadyContainsAPlayer.cs" />
     <Compile Include="Exceptions\FullGameException.cs" />
