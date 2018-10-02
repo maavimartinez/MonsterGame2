@@ -284,7 +284,7 @@ namespace Client
                         {
                             List<string> actionResponse = sendActionResponse.GetDoActionResponse();
                             RefreshBoard(actionResponse);
-                            CheckIfGameFinished(actionResponse);
+                            ShowIfGameFinished(actionResponse);
                         }
                         else if (sendActionResponse.IsInvalidAction())
                         {
@@ -307,7 +307,7 @@ namespace Client
                 }
                 if (playerIsDead)
                 {
-                    CheckIfGameHasFinished();
+                    string st = AskServerIfGameHasFinished();
                 }
             }
             else
@@ -325,7 +325,7 @@ namespace Client
 
             if (response.HadSuccess())
             {
-                CheckIfGameFinished(response.GetRemovePlayerFromGameResponse());
+                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse());
             }
             else 
             {
@@ -333,7 +333,7 @@ namespace Client
             }
         }
 
-        private void CheckIfGameHasFinished()
+        private string AskServerIfGameHasFinished()
         {
             bool exit = false;
             while (!exit) {
@@ -348,6 +348,10 @@ namespace Client
                     {
                         Console.WriteLine(result);
                         exit = true;
+                        return "GameFinished";
+                    }else
+                    {
+                        return "GameNotFinished";
                     }
                 }
                 else
@@ -356,6 +360,7 @@ namespace Client
                     exit = true;
                 }
             }
+            return null; //chequear
         }
 
         private void TimesOut()
@@ -369,12 +374,15 @@ namespace Client
 
                 if (sendActionResponse.HadSuccess())
                 {
-                    CheckIfGameFinished(sendActionResponse.GetTimeOutResponse());
+                    if (AskServerIfGameHasFinished() == "GameNotFinished")
+                    {
+                        ShowIfGameFinished(sendActionResponse.GetTimeOutResponse());
+                    }
                 }
             }
         }
 
-        private void CheckIfGameFinished(List<string> responseMessage)
+        private void    ShowIfGameFinished(List<string> responseMessage)
         {
             for(int i = 0; i< responseMessage.Count(); i++)
             {

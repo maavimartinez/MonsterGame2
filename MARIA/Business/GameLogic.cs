@@ -263,13 +263,13 @@ namespace Business
             }
             if (aliveMonsters == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
             {
-                aliveSurvivors.Trim(',');
+                aliveSurvivors = aliveSurvivors.Trim(',');
                 ActiveGameResult = aliveSurvivors + "won !";
                 return EndGame();
             }
             else if (alivePlayers == 1 && aliveSurvivors == "")
             {
-                aliveMonsters.Trim(',');    //aliveMonsters = ....
+                aliveMonsters = aliveMonsters.Trim(',');    
                 ActiveGameResult = aliveMonsters + "won !";
                 return EndGame();
             }
@@ -286,7 +286,7 @@ namespace Business
                 Store.ActiveGame.Players.Clear();
                 List<string> ret = new List<string>();
                 ret.Add("FINISHED");
-                ret.Add(ActiveGameResult);
+                ret.Add(ActiveGameResult.ToUpper());
                 return ret;             
             }
             return null;
@@ -308,7 +308,7 @@ namespace Business
         {
             if(ActiveGameResult != "")
             {
-                return ActiveGameResult;
+                return ActiveGameResult.ToUpper();
             }else
             {
                 return "GameNotFinished";

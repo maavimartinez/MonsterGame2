@@ -57,10 +57,13 @@ namespace UI
 
         private static void ShowOnGameUsernamesAndStatus(List<string> opponents)
         {
-            Console.WriteLine("On-Game Players: ");
-            foreach (string st in opponents)
+            if (opponents.Count > 0)
             {
-                Console.WriteLine("->" + st);
+                Console.WriteLine("On-Game Players: ");
+                foreach (string st in opponents)
+                {
+                    Console.WriteLine("->" + st);
+                }
             }
         }
 
