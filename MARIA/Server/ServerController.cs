@@ -212,14 +212,33 @@ namespace Server
         {
             try
             {
-                List<string> timesOut = gameLogic.TimesOut();
+                gameLogic.TimesOut();
+                connection.SendMessage(BuildResponse(ResponseCode.Ok));
+            }
+            catch (TimesOutException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
+
+                connection.Close();
+            }
+            catch (RecordNotFoundException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+            }
+            catch (ClientNotConnectedException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
+
+        }
+
+        public void GetResultByTimesOut(Connection connection, Request request)
+        {
+            try
+            {
+                List<string> timesOut = gameLogic.GetGameResultByTimeOut();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, timesOut.ToArray()));
-
-                if (!timesOut[0].Equals("timesNotOut"))
-                {
-                    connection.Close();
-                }
             }
             catch (RecordNotFoundException e)
             {

@@ -60,6 +60,9 @@ namespace Server
                         case Command.CheckIfGameHasFinished:
                             serverController.CheckIfGameHasFinished(conn, request);
                             break;
+                        case Command.GetResultByTimesOut:
+                            serverController.GetResultByTimesOut(conn, request);
+                            break;
                         default:
                             serverController.InvalidCommand(conn);
                             break;

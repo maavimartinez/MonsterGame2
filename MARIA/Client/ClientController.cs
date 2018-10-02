@@ -284,7 +284,7 @@ namespace Client
                         {
                             List<string> actionResponse = sendActionResponse.GetDoActionResponse();
                             RefreshBoard(actionResponse);
-                            ShowIfGameFinished(actionResponse,true);
+                            ShowIfGameFinished(actionResponse,false);
                         }
                         else if (sendActionResponse.IsInvalidAction())
                         {
@@ -326,7 +326,7 @@ namespace Client
 
             if (response.HadSuccess())
             {
-                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse(),true);
+                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse(),false);
             }
             else 
             {
@@ -369,27 +369,35 @@ namespace Client
             TimeControllerConnection = clientProtocol.ConnectToServer();
             while (!timesOut)
             {
-                TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
+                    TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
 
-                var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
+                    var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
 
-                if (sendActionResponse.HadSuccess())
+                if (sendActionResponse.GameHasFinished())
                 {
-                    if (AskServerIfGameHasFinished() == "GameNotFinished")
-                    {
-                        ShowIfGameFinished(sendActionResponse.GetTimeOutResponse(),true);
-                    }
+                    //El tiempo termino, muestro el resultado por tiempo terminado
+                    GetResultByTimesOut();
                 }
+                    //Else{ no entiendo cual seria el otro caso, el tiempo no termino y ??????? el resultado no se muestra en el Doaction y listo?
             }
         }
 
-        private void  ShowIfGameFinished(List<string> responseMessage, bool timesOut)
+        private void GetResultByTimesOut()
+        {
+            SocketConnection.SendMessage(BuildRequest(Command.GetResultByTimesOut));
+
+            var response = new Response(SocketConnection.ReadMessage());
+
+            ShowIfGameFinished(response.GetTimeOutResponse(), true);
+        }
+
+        private void  ShowIfGameFinished(List<string> responseMessage, bool timesOut2)
         {
             for(int i = 0; i< responseMessage.Count(); i++)
             {
                 if(responseMessage[i] == "FINISHED")
                 {
-                    if(timesOut) Console.WriteLine("Active Game's time is over!. You can now join a new game.");
+                    if(timesOut2) Console.WriteLine("Active Game's time is over!. You can now join a new game.");
                     Console.WriteLine(responseMessage[i + 1]);
                     exitGame = true;
                     timesOut = true;
