@@ -40,7 +40,7 @@ namespace Business
             int minTurn = GetMinTurn();
             int difference = player.NumOfActions - minTurn;
             bool validDifference = difference < 2;
-            if (validDifference) throw new WaitForTurnException();
+            if (!validDifference) throw new WaitForTurnException();
         }
 
         private int GetMinTurn()
