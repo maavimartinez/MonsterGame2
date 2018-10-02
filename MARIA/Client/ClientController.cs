@@ -313,11 +313,12 @@ namespace Client
             else
             {
                 Console.WriteLine(response.ErrorMessage());
+                string st = AskServerIfGameHasFinished();
             }
             
         }
 
-        private void RemovePlayerFromGame()
+        public void RemovePlayerFromGame()
         {
             SocketConnection.SendMessage(BuildRequest(Command.RemovePlayerFromGame));
 

@@ -35,6 +35,7 @@ namespace Client
             if (IsConsoleClosing(eventType))
             {
                 Console.WriteLine("Console window closing, disconnecting client");
+                clientController.RemovePlayerFromGame();
                 clientController.DisconnectFromServer();
             }
             return false;
