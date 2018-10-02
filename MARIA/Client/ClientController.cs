@@ -47,7 +47,7 @@ namespace Client
             {
                 Entities.Client client = AskForCredentials();
                 SocketConnection = clientProtocol.ConnectToServer();
-                PrepareSendingImage();
+            //    PrepareSendingImage();
                 object[] request = BuildRequest(Command.Login, client.Username, client.Password);
                 SocketConnection.SendMessage(request);
                 var response = new Response(SocketConnection.ReadMessage());
@@ -269,7 +269,7 @@ namespace Client
                      
                     if (timesOut) break;
 
-                    if (myAction.Equals("exit") )
+                    if (myAction.Equals("exit"))
                     {
                         RemovePlayerFromGame();
                         exitGame = true;
@@ -304,6 +304,7 @@ namespace Client
                             RemovePlayerFromGame();
                         }
                     }
+                    //if(playerIsDead) GetWhoWonGame
                 }
             }
             else
@@ -349,7 +350,7 @@ namespace Client
         {
             for(int i = 0; i< responseMessage.Count(); i++)
             {
-                if(responseMessage[i] == "Finished")
+                if(responseMessage[i] == "FINISHED")
                 {
                     Console.WriteLine(responseMessage[i + 1]);
                     Console.WriteLine("Active Game's time is over!. You can now join a new game.");
@@ -414,7 +415,7 @@ namespace Client
             {
                 if (response[i].Equals("NEAR"))
                 {
-                    for(int j = i+1; j< response.Count(); j++)
+                    for (int j = i + 1; j < response.Count() && !response[j].Equals("HP") && !response[j].Equals("FINISHED"); j++)
                     {
                         near.Add(response[j]);
                     }

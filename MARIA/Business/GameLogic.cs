@@ -169,7 +169,8 @@ namespace Business
                 Player player = GetLoggedPlayer(usernameFrom);
                 if (!player.isAlive) throw new LoggedPlayerIsDeadException();
                 ret = ret.Concat(ActionLogic.DoAction(player, action)).ToList();
-                if (CheckIfGameHasEnded() != null) ret = ret.Concat(CheckIfGameHasEnded()).ToList();
+                List<string> ended = CheckIfGameHasEnded();
+                if (ended != null) ret = ret.Concat(ended).ToList();
                 return ret;
             }
         }
@@ -260,13 +261,13 @@ namespace Business
                     if (pl is Survivor) aliveSurvivors = aliveSurvivors + pl.Client.Username + ",";
                 }
             }
-            if (aliveMonsters == "")
+            if (aliveMonsters == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
             {
                 aliveSurvivors.Trim(',');
                 ActiveGameResult = aliveSurvivors + "won !";
                 return EndGame();
             }
-            else if (alivePlayers == 1 && aliveSurvivors == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
+            else if (alivePlayers == 1 && aliveSurvivors == "")
             {
                 aliveMonsters.Trim(',');
                 ActiveGameResult = aliveMonsters + "won !";

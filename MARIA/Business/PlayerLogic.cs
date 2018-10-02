@@ -34,7 +34,7 @@ namespace Business
 
         private void CheckIfGameHasMonster()
         {
-            if (Store.ActiveGame != null && Store.ActiveGame.Players.Count() == 0)
+            if (Store.ActiveGame != null && Store.ActiveGame.Players.Count() == 3)
             {
                 int countMonsters = 0;
                 foreach (Player pl in Store.ActiveGame.Players)
@@ -43,7 +43,6 @@ namespace Business
                 }
                 if (countMonsters == 0) throw new NoMonstersInGameException();
             }
-            throw new NoMonstersInGameException();
         }
 
         public void JoinPlayerToGame(Player loggedPlayer)
