@@ -216,7 +216,7 @@ namespace Business
             if(aliveSurvivors != "")
             {
                 aliveSurvivors.Trim(',');
-                ActiveGameResult = aliveSurvivors + "won !";
+                ActiveGameResult = aliveSurvivors + " won !";
                 return EndGame();
             }else if(aliveSurvivors == "")
             {
@@ -264,13 +264,13 @@ namespace Business
             if (aliveMonsters == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
             {
                 aliveSurvivors = aliveSurvivors.Trim(',');
-                ActiveGameResult = aliveSurvivors + "won !";
+                ActiveGameResult = aliveSurvivors + " won !";
                 return EndGame();
             }
             else if (alivePlayers == 1 && aliveSurvivors == "")
             {
                 aliveMonsters = aliveMonsters.Trim(',');    
-                ActiveGameResult = aliveMonsters + "won !";
+                ActiveGameResult = aliveMonsters + " won !";
                 return EndGame();
             }
             return null;

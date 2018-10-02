@@ -256,11 +256,11 @@ namespace Client
 
             if (response.HadSuccess())
             {
-            /*    if (timer == null)
+                if (timer == null)
                 {
                     timer = new Thread(() => TimesOut());
                     timer.Start();
-                }*/
+                }
 
                 while ((!exitGame || !timesOut) && !playerIsDead)
                 {
@@ -376,20 +376,20 @@ namespace Client
                 {
                     if (AskServerIfGameHasFinished() == "GameNotFinished")
                     {
+                        Console.WriteLine("Active Game's time is over!. You can now join a new game.");
                         ShowIfGameFinished(sendActionResponse.GetTimeOutResponse());
                     }
                 }
             }
         }
 
-        private void    ShowIfGameFinished(List<string> responseMessage)
+        private void  ShowIfGameFinished(List<string> responseMessage)
         {
             for(int i = 0; i< responseMessage.Count(); i++)
             {
                 if(responseMessage[i] == "FINISHED")
                 {
                     Console.WriteLine(responseMessage[i + 1]);
-                    Console.WriteLine("Active Game's time is over!. You can now join a new game.");
                     exitGame = true;
                     timesOut = true;
                     timer = null;
