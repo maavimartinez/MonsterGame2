@@ -5,7 +5,7 @@ using System.Threading;
 using System.Linq;
 using Protocol;
 using UI;
-
+using System.Text;
 using System.Drawing;
 using System.IO;
 using System.Net;
@@ -508,7 +508,13 @@ namespace Client
                         //Socket send mis bytes hasta ahora
 
                         //NO SE COMO PASAR EL ARRAY DE BYTES parts en la request
-                        SocketConnection.SendMessage(BuildRequest(command, parts.ToArray()));
+
+                        string converted = Encoding.UTF8.GetString(parts, 0, parts.Length);
+
+
+                        byte[] receivedParts = Encoding.ASCII.GetBytes(converted);
+
+                        SocketConnection.SendMessage(BuildRequest(command, converted));
                         var keepSendingResponse = new Response(SocketConnection.ReadMessage());
 
                         //Clear el array q mando

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 
 namespace Protocol
@@ -24,20 +25,16 @@ namespace Protocol
             return requestObject[2];
         }
 
-    /*    public string Parts()
-        {
-            var ret = new List<string>();
-            for (int i = 2; i < requestObject.Length; i++)
-            {
-                ret.Add(requestObject[i]);
-            }
-            return ret;
-        }
-        */
         public string Role()
         {
             return requestObject[2];
         }
+
+        public string Bytes()
+        {
+            return requestObject[2];
+        }
+
         public string Recipient()
         {
           return requestObject[2];  

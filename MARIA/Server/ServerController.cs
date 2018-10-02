@@ -5,6 +5,7 @@ using Business.Exceptions;
 using Entities;
 using System.Net.Sockets;
 using System;
+using System.Text;
 using System.IO;
 using Protocol;
 
@@ -292,13 +293,13 @@ namespace Server
         {
             //NO SE EN Q FORMATO VIENE MI ARRAY DE BYTES DE LA FOTO
 
-          //  byte[] receivedParts = request.Parts();
+            byte[] receivedParts = Encoding.ASCII.GetBytes(request.Bytes()); 
             if (parts == 0)
             {
-                //Array.Copy(picture, parts, receivedParts, 0, 9999);
+                Array.Copy(picture, parts, receivedParts, 0, 9999);
             }else
             {
-               // Array.Copy(picture, parts + 1, receivedParts, 0, 9999);
+                Array.Copy(picture, parts + 1, receivedParts, 0, 9999);
             }
 
             parts += parts + 9999;
