@@ -42,7 +42,7 @@ namespace Client
             bool exit = false;
             while (!exit)
             {
-                if (AskServerIfGameHasFinished().Equals("GameFinished")) Console.WriteLine("Game has finished pruebAAA");
+              //  if (AskServerIfGameHasFinished().Equals("GameFinished")) Console.WriteLine("Game has finished pruebAAA");
                 Console.WriteLine(ClientUI.Title(clientUsername));
                 int option = Menus.ClientControllerLoopMenu();
                 if (option == 4) exit = true;

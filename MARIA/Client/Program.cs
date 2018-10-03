@@ -25,7 +25,7 @@ namespace Client
         {
             try
             {
-              //  DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND);
+                DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND);
                 clientController.LoopMenu();
             }
             catch (SocketException e)
