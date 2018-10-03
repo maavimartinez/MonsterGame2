@@ -194,9 +194,9 @@ namespace Business
             if (attacker.GetType() == typeof(Survivor) && defender.GetType() == typeof(Survivor))
                 throw new ActionException("Survivor can't attack survivors");
             defender.HP = defender.HP - attacker.AP;
-            if (defender.HP == 0) defender.isAlive = false;
+            if (defender.HP == 0) defender.IsAlive = false;
             List<string> ret = new List<string>();
-            if (!defender.isAlive)
+            if (!defender.IsAlive)
             {
                 ret.Add("KILLED");
                 ret.Add(defender.Client.Username);

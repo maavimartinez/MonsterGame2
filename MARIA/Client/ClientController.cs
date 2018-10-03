@@ -25,7 +25,6 @@ namespace Client
         private Connection TimeControllerConnection { get; set; }
         private bool timesOut = false;
         private bool exitGame = false;
-        private bool playerIsDead = false;
         private Thread timer;
 
         public ClientController()
@@ -228,7 +227,6 @@ namespace Client
 
         private void Play()
         {
-            playerIsDead = false;
             exitGame = false;
             timesOut = false;
             int input = Menus.SelectRoleMenu();
