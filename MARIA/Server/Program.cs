@@ -43,8 +43,8 @@ namespace Server
                             }
                             catch (Exception) //Aca pueden caer SocketExceptions y otras
                             {
-                                endServer = true;    
-                        }
+                                endServer = true;
+                            }
                         });
                         threads.Add(clientThread);
                         clientThread.Start();
@@ -52,7 +52,7 @@ namespace Server
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("The server has stopped listening for connections.");
+                        Console.WriteLine(" -> The server has stopped listening for connections.");
                     }
                 }
             });
@@ -67,23 +67,28 @@ namespace Server
 
                 if (option == 3)
                 {
-                    endServer = true; 
+                    endServer = true;
                     exit = true;
                 }
+
             }
             CloseServer(server);
         }
 
+        private static bool GameIsOff(GameLogic controller)
+        {
+            return controller.Store.ActiveGame != null && !controller.Store.ActiveGame.isOn;
+        }
+
         private static void CloseServer(ServerProtocol server)
         {
-            //Thread se cuelga en el Accept. Tenemos que matar ese socket.
             try
             {
                 server.Socket.Close();
             }
             catch (Exception)
             {
-                Console.WriteLine("Cerrando el hilo que escucha conecciones.");
+                Console.WriteLine("Closing the thread that is listening for connections.");
             }
 
             if (connections.Count > 0)
@@ -91,23 +96,15 @@ namespace Server
                 foreach (Connection connection in connections)
                 {
                     try
-                    {
-                        //Este mata la conexion al socket del router, pero el catch se hace arriba, no aca. Esta mal?
+                    { 
                         connection.Close();
-
                     }
                     catch (Exception)
                     {
-                        //Aca no entra nunca
-                        Console.WriteLine("Forzando el socket a cerrar.");
+                        Console.WriteLine("Forcing socket to close.");
                     }
                 }
             }
-            else
-            {
-                //No hay conexiones, no cerramos una a una. Borrar else.
-            }
-            //Juntando cada thread con el principal..Despues, se cierra la consola.
             CloseThreads();
         }
 
@@ -122,35 +119,46 @@ namespace Server
 
         private static void GoToMenuOption(int option, GameLogic controller)
         {
-            if (option == 1)
-                if (controller.GetClients().Count == 0)
-                {
-                    Console.WriteLine("There are no logged players.");
-                }
-            else
-                {
-                    controller.GetClients().ForEach(client =>
-                    {
-                        Console.WriteLine(
-                            $"- {client.Username} \tConnected: {client.ConnectionsCount} times");
-                    });
-                }
-
-            else if (option == 2)
+            if (GameIsOff(controller))
             {
-                if (controller.GetCurrentPlayers().Count==0)
-                {
-                    Console.WriteLine("There are no players in current game.");
-                }
-                else
-                {
-                    controller.GetCurrentPlayers().ForEach(player =>
+                if (option == 1)
+                    if (controller.GetClients().Count == 0)
                     {
-                        if (player.Client.ConnectedSince == null) return;
-                        Console.WriteLine(
-                            $"- {player.Client.Username} \tConnected: {player.Client.ConnectionsCount}times");
-                    });
-                } 
+                        Console.WriteLine("\n -> There are no logged players.\n");
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        controller.GetClients().ForEach(client =>
+                        {
+                            Console.WriteLine(
+                                $"- {client.Username} \tConnected: {client.ConnectionsCount} times");
+                        });
+                        Console.WriteLine();
+                    }
+
+                else if (option == 2)
+                {
+                    if (controller.GetCurrentPlayers().Count == 0)
+                    {
+                        Console.WriteLine("\n -> There are no players in current game.\n");
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        controller.GetCurrentPlayers().ForEach(player =>
+                        {
+                            if (player.Client.ConnectedSince == null) return;
+                            Console.WriteLine(
+                                $"- {player.Client.Username} \tConnected: {player.Client.ConnectionsCount}times");
+                        });
+                        Console.WriteLine();
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("\n -> Game in process, try again when it has finished.\n");
             }
         }
 

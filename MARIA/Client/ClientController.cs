@@ -35,39 +35,6 @@ namespace Client
             clientProtocol = new ClientProtocol(serverIp, serverPort, clientIp, clientPort);
         }
 
-        private void ConnectToServer()
-        {
-            Console.WriteLine(ClientUI.Connecting());
-            bool connected;
-            do
-            {
-                Entities.Client client = AskForCredentials();
-                SocketConnection = clientProtocol.ConnectToServer();
-                object[] request = BuildRequest(Command.Login, client.Username, client.Password);
-                SocketConnection.SendMessage(request);
-                var response = new Response(SocketConnection.ReadMessage());
-                connected = response.HadSuccess();
-                if (connected)
-                {
-                    clientToken = response.GetClientToken();
-                    clientUsername = client.Username;
-                    UploadImage(client.Username);
-                    Console.WriteLine(ClientUI.LoginSuccessful());
-                }
-                else
-                {
-                    Console.WriteLine(response.ErrorMessage());
-                }
-            } while (!connected);
-        }
-
-        public void DisconnectFromServer()
-        {
-            SocketConnection.SendMessage(BuildRequest(Command.DisconnectClient));
-            var response = new Response(SocketConnection.ReadMessage());
-            Console.WriteLine(response.HadSuccess() ? "Disconnected" : response.ErrorMessage());
-        }
-
         internal void LoopMenu()
         {
             Init();
@@ -76,7 +43,7 @@ namespace Client
             {
                 Console.WriteLine(ClientUI.Title(clientUsername));
                 int option = Menus.ClientControllerLoopMenu();
-                if (option == 3) exit = true;
+                if (option == 4) exit = true;
                 MapOptionToActionOfMainMenu(option);
                 if (!exitGame)
                 {
@@ -97,6 +64,65 @@ namespace Client
             ClientUI.Clear();
         }
 
+        private void MapOptionToActionOfMainMenu(int option)
+        {
+            switch (option)
+            {
+                case 1:
+                    ListConnectedClients();
+                    break;
+                case 2:
+                    UploadImage(clientUsername);
+                    break;
+                case 3:
+                    Play();
+                    break;
+                default:
+                    DisconnectFromServer();
+                    break;
+            }
+        }
+
+        private void ConnectToServer()
+        {
+            Console.WriteLine(ClientUI.Connecting());
+            bool connected;
+            do
+            {
+                Entities.Client client = AskForCredentials();
+                SocketConnection = clientProtocol.ConnectToServer();
+                object[] request = BuildRequest(Command.Login, client.Username, client.Password);
+                SocketConnection.SendMessage(request);
+                var response = new Response(SocketConnection.ReadMessage());
+                connected = response.HadSuccess();
+                if (connected)
+                {
+                    clientToken = response.GetClientToken();
+                    clientUsername = client.Username;
+                    ClientUI.LoginSuccessful();
+                }
+                else
+                {
+                    Console.WriteLine(response.ErrorMessage());
+                }
+            } while (!connected);
+        }
+
+        public void DisconnectFromServer()
+        {
+            SocketConnection.SendMessage(BuildRequest(Command.DisconnectClient));
+            var response = new Response(SocketConnection.ReadMessage());
+            if (response.HadSuccess())
+            {
+                Console.WriteLine("Disconnected");
+                Environment.Exit(1);
+            }
+            else
+            {
+                Console.WriteLine(response.ErrorMessage());
+            }
+        }
+
         private bool ListConnectedClients()
         {
             bool serverHasClients;
@@ -106,7 +132,7 @@ namespace Client
             var response = new Response(SocketConnection.ReadMessage());
             if (response.HadSuccess())
             {
-                Console.WriteLine(ClientUI.TheseAreTheConnectedPlayers());
+                ClientUI.TheseAreTheConnectedPlayers();
                 List<string> connectedClients = response.UserList();
                 PrintPlayers(connectedClients);
                 serverHasClients = connectedClients.Count > 0;
@@ -154,11 +180,84 @@ namespace Client
             return friends;
         }
 
+        private void UploadImage(string username)
+        {
+            AskForPath:
+            ClientUI.InsertAvatarPath();
+            string path = Input.RequestInput();
+            if (path.Equals("EXIT", StringComparison.OrdinalIgnoreCase)) goto End;
+            path = Path.Combine(path,"");
+            const int CHUNK_SIZE = 9999;
+            try
+            {
+                FileInfo fileInfo = new FileInfo(path);
+                string extension = fileInfo.Extension;
+
+                int totalLength = (int)fileInfo.Length;
+
+                Command command = Command.SendPicturePart;
+
+                double splittingTimes = (double)totalLength / CHUNK_SIZE;
+
+                SocketConnection.SendMessage(BuildRequest(Command.ReadyToSendPicture, username, totalLength, extension));
+                var response = new Response(SocketConnection.ReadMessage());
+
+                if (response.HadSuccess())
+                {
+                    using (FileStream fs = fileInfo.OpenRead())
+                    {
+                        var read = 0;
+                        while (read < totalLength)
+                        {
+                            if (splittingTimes < 1 || splittingTimes == 1) 
+                            {
+                                command = Command.SendLastPicturePart;
+                            }
+                            byte[] parts = new byte[CHUNK_SIZE];
+
+                            read += fs.Read(parts, 0, CHUNK_SIZE);
+
+                            var stringBasedPart = Convert.ToBase64String(parts);
+
+                            SocketConnection.SendMessage(BuildRequest(command, stringBasedPart));
+                            var keepSendingResponse = new Response(SocketConnection.ReadMessage());
+
+                            splittingTimes--;
+
+                            if (!keepSendingResponse.HadSuccess())
+                            {
+                                Console.WriteLine("\n -> Picture coudn't be uploaded\n");
+                                goto End;
+                            }
+                        }
+                    }
+                    Console.WriteLine("\n -> Upload was successful\n");
+                }
+                else
+                {
+                    Console.WriteLine(response.ErrorMessage());
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\n -> The path is invalid.\n Please try again or type 'exit' to leave.\n");
+                goto AskForPath;
+            }
+            End:;
+        }
+
+        public Image byteArrayToImage(byte[] byteArrayIn)
+        {
+            using (var ms = new MemoryStream(byteArrayIn))
+            {
+                return Image.FromStream(ms);
+            }
+        }
+
         private void PrintPlayers(List<string> players)
         {
             players.ForEach(Console.WriteLine);
         }
-
         
         private string GetServerIp()
         {
@@ -186,13 +285,13 @@ namespace Client
 
         private Entities.Client AskForCredentials()
         {
-            Console.WriteLine(ClientUI.LoginTitle());
+            ClientUI.LoginTitle();
 
-            Console.WriteLine(ClientUI.InsertUsername());
-            string username = Input.RequestUsernameAndPassword(ClientUI.InsertUsername());
+            ClientUI.InsertUsername();
+            string username = Input.RequestUsernameAndPassword("Insert Username: ");
 
-            Console.WriteLine(ClientUI.InsertPassword());
-            string password = Input.RequestUsernameAndPassword(ClientUI.InsertUsername());
+            ClientUI.InsertPassword();
+            string password = Input.RequestUsernameAndPassword("Insert Password: ");
 
             return new Entities.Client(username, password);
         }
@@ -206,22 +305,6 @@ namespace Client
             return request.ToArray();
         }
 
-        private void MapOptionToActionOfMainMenu(int option)
-        {
-            switch (option)
-            {
-                case 1:
-                    ListConnectedClients();
-                    break;
-                case 2:
-                    Play();
-                    break;
-                default:
-                    DisconnectFromServer();
-                    break;
-            }
-        }
-
         private void Play()
         {
             exitGame = false;
@@ -231,6 +314,7 @@ namespace Client
             string role="";
             if(input == 0) role = "Monster";
             if(input == 1) role = "Survivor";
+         //   if(input == 2) goto End;
 
             SocketConnection.SendMessage(BuildRequest(Command.SelectRole, role));
 
@@ -240,11 +324,13 @@ namespace Client
             {
                 Console.WriteLine("You are now a " + role);
                 JoinGame();
+         //       goto End;
             }
             else
             {
                 Console.WriteLine(response.ErrorMessage());
             }
+        //    End:;
         }
 
         private void JoinGame()
@@ -270,13 +356,13 @@ namespace Client
 
                     string myAction = Input.RequestInput();
                      
-                    if (timesOut) goto End;
+                    if (timesOut) break;
 
                     if (myAction.Equals("exit"))
                     {
                         RemovePlayerFromGame();
                         exitGame = true;
-                        goto End;
+                        Console.WriteLine("Type any key to continue...");
                     }
                     else
                     {
@@ -295,7 +381,8 @@ namespace Client
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             if (sendActionResponse.ErrorMessage() == "You are dead and can no longer play")
                             {
-                                goto PlayerIsDead;
+                                string st = AskServerIfGameHasFinished();
+                                Console.WriteLine("Type any key to continue...");
                             }
                             else
                             {
@@ -315,12 +402,6 @@ namespace Client
                 Console.WriteLine(response.ErrorMessage());
                 string aux = AskServerIfGameHasFinished();
             }
-
-        PlayerIsDead:
-            string st = AskServerIfGameHasFinished();
-        End:
-            Console.WriteLine("Type any key to continue...");
-
         }
 
         public void RemovePlayerFromGame()
@@ -374,14 +455,14 @@ namespace Client
             TimeControllerConnection = clientProtocol.ConnectToServer();
             while (!timesOut)
             {
-                    TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
+                TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
 
-                    var sendActionResponse = new Response(TimeControllerConnection.ReadMessage());
+                var response = new Response(TimeControllerConnection.ReadMessage());
 
-                if (sendActionResponse.GameHasFinished())
+                if (response.GameHasFinished())
                 {
                     GetResultByTimesOut();
-                }       
+                }
             }
         }
 
@@ -394,7 +475,7 @@ namespace Client
             ShowIfGameFinished(response.GetTimeOutResponse(), true);
         }
 
-        private void  ShowIfGameFinished(List<string> responseMessage, bool timesOut2)
+        private void ShowIfGameFinished(List<string> responseMessage, bool timesOut2)
         {
             for(int i = 0; i< responseMessage.Count(); i++)
             {
@@ -410,6 +491,7 @@ namespace Client
                 }
             }
         }
+
 
         private void RefreshBoard(List<string> response)
         {
@@ -474,74 +556,5 @@ namespace Client
             return near;
         }
 
-         private void UploadImage(string username)
-         {
-            //Path: Pedir por pantalla escribir el path de una foto existente en tu pc. Por ej: "C:\Users\Usuario\Desktop\03.png". A eso hay q agregarle una @ y las comillas al principio y final como abajo:
-            //Esta foto pesa 54 kb, va de ejemplo
-            string path = @"C:\Users\Usuario\Desktop\03.png";
-            const int CHUNK_SIZE = 9999;
-            try
-            {
-                FileInfo fileInfo = new FileInfo(path);
-                string extension = fileInfo.Extension;
-
-                //Osea 54593 bytes
-                int totalLength = (int)fileInfo.Length;
-
-                Command command = Command.SendPicturePart;
-
-                double splittingTimes = (double)totalLength / CHUNK_SIZE;
-
-                SocketConnection.SendMessage(BuildRequest(Command.ReadyToSendPicture, username, totalLength, extension));
-                var response = new Response(SocketConnection.ReadMessage());
-
-                if (response.HadSuccess())
-                {
-                    using (FileStream fs = fileInfo.OpenRead())
-                    {
-                        var read = 0;
-                        while (read < totalLength)
-                        {
-                            if (splittingTimes < 1 || splittingTimes == 1) //Es la ultima tanda de bytes
-                            {
-                                command = Command.SendLastPicturePart;
-                            }
-                            byte[] parts = new byte[CHUNK_SIZE];
-
-                            read += fs.Read(parts, 0, CHUNK_SIZE);
-
-                            var stringBasedPart = Convert.ToBase64String(parts);
-
-                            //Mando por partes
-                            SocketConnection.SendMessage(BuildRequest(command, stringBasedPart));
-                            var keepSendingResponse = new Response(SocketConnection.ReadMessage());
-
-                            splittingTimes--;
-
-                            if (!keepSendingResponse.HadSuccess())
-                            {
-                                Console.WriteLine("Picture coudn't be uploaded");
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine(response.ErrorMessage());
-                }
-            }catch(Exception e)
-            {
-                Console.WriteLine("The path is invalid, we couldnt upload the picture."); //Ver si volver a pedir o se jode(lo mas facil)
-            }
-         }
-
-        public Image byteArrayToImage(byte[] byteArrayIn)
-        {
-            using (var ms = new MemoryStream(byteArrayIn))
-            {
-                return Image.FromStream(ms);
-            }
-        }
     }
 }

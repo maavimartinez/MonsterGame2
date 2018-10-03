@@ -191,7 +191,7 @@ namespace Business
 
         public void TimesOut()
         {
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(0.4))
+            if ((Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(0.3)))
             {
                 throw new TimesOutException("");
             }

@@ -13,7 +13,8 @@ namespace Client
         {
             try
             {
-                handler = new ConsoleEventDelegate(ConsoleEventCallback);
+             //   handler = new ConsoleEventDelegate(ConsoleEventCallback);
+           //     AppDomain.CurrentDomain.ProcessExit += new EventHandler(CurrentDomain_ProcessExit);
                 clientController.LoopMenu();
             }
             catch (SocketException e)
@@ -30,15 +31,11 @@ namespace Client
             }
         }
 
-        static bool ConsoleEventCallback(int eventType)
+        static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            if (IsConsoleClosing(eventType))
-            {
                 Console.WriteLine("Console window closing, disconnecting client");
                 clientController.RemovePlayerFromGame();
                 clientController.DisconnectFromServer();
-            }
-            return false;
         }
 
         private static bool IsConsoleClosing(int eventType)

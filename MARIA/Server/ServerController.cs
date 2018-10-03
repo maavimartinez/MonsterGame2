@@ -201,8 +201,20 @@ namespace Server
 
         public void DisconnectClient(Connection connection, Request request)
         {
-            gameLogic.DisconnectClient(request.UserToken());
-            connection.SendMessage(BuildResponse(ResponseCode.Ok, "Client disconnected"));
+            try
+            {
+                gameLogic.DisconnectClient(request.UserToken());
+                connection.SendMessage(BuildResponse(ResponseCode.Ok, "Client disconnected"));
+                connection.Close();
+            }
+            catch (RecordNotFoundException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.NotFound, e.Message));
+            }
+            catch (ClientNotConnectedException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
         }
 
         public void TimesOut(Connection connection, Request request)
@@ -268,7 +280,6 @@ namespace Server
             }
         }
 
-
         public void CheckIfGameHasFinished(Connection connection, Request request)
         {
             try
@@ -301,7 +312,6 @@ namespace Server
 
             try
             {
-                //La foto se guarda con tu nombre en Server/bin/Debug que es donde esta corriendo el server (exe)
                 string pathTest = Path.Combine(Environment.CurrentDirectory, picturesUsername+extension);
 
                 var img = Image.FromStream(new MemoryStream(Convert.FromBase64String(picture)));

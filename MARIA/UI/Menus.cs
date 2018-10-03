@@ -11,6 +11,7 @@ namespace UI
         {
             List<string> options = new List<string>(new[]{
                     "List Connected Users",
+                    "Upload avatar",
                     "Join Game",
                     "Exit"
             });
@@ -24,7 +25,7 @@ namespace UI
         public static int SelectRoleMenu()
         {
             List<string> options = new List<string>(new[]{
-                    "Monster", "Survivor"
+                    "Monster", "Survivor", "Exit"
             });
             Console.WriteLine("+----------------------------+"); 
             Console.WriteLine("|           ROLES            |");

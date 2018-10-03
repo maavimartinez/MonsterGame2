@@ -32,29 +32,34 @@ namespace UI
             return "+----------------------------+\n|            LOGIN           |\n+----------------------------+";
         }
 
-        public static string InsertUsername()
+        public static void InsertUsername()
         {
-            return "Insert Username: ";
+            Console.WriteLine("Insert Username: ");
         }
 
-        public static string InsertPassword()
+        public static void InsertPassword()
         {
-            return "Insert Password: ";
+            Console.WriteLine("Insert Password: ");
         }
 
-        public static string InvalidCredentials()
+        public static void InsertAvatarPath()
         {
-            return "Wrong username or password";
+            Console.WriteLine("Insert avatar path: ");
         }
 
-        public static string TheseAreTheConnectedPlayers()
+        public static void InvalidCredentials()
         {
-            return "These are the connected players:";
+            Console.WriteLine("Wrong username or password");
         }
 
-        public static string LoginSuccessful()
+        public static void TheseAreTheConnectedPlayers()
         {
-            return "Logged in successfully";
+            Console.WriteLine("These are the connected players:");
+        }
+
+        public static void LoginSuccessful()
+        {
+            Console.WriteLine("Logged in successfully");
         }
         
         public static void Clear()
