@@ -10,6 +10,8 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Drawing;
+using System.Diagnostics;
 
 
 namespace Client
@@ -473,25 +475,25 @@ namespace Client
          {
              //Esta foto pesa 54 kb, va de ejemplo
              string path = @"C:\Users\Usuario\Desktop\03.png";
-
-             FileInfo fileInfo = new FileInfo(path);
+            const int CHUNK_SIZE = 9999;
+            FileInfo fileInfo = new FileInfo(path);
 
              //Osea 54593 bytes
              byte[] data = new byte[fileInfo.Length];
 
              int totalLength = data.Length;
 
-            byte[] parts = new byte[9999];
 
             Command command = Command.SendPicturePart;
 
-            int times = totalLength / 9999;
+            double times = totalLength / CHUNK_SIZE;
 
             SocketConnection.SendMessage(BuildRequest(Command.ReadyToSendPicture, username, totalLength, path));
             var response = new Response(SocketConnection.ReadMessage());
 
             if (response.HadSuccess())
             {
+                String miPrueba = String.Empty;
                 // Load a filestream and put its content into the byte[]
                 using (FileStream fs = fileInfo.OpenRead())
                 {
@@ -502,24 +504,35 @@ namespace Client
                         {
                             command = Command.SendLastPicturePart;
                         }
-                        read += fs.Read(data, read, 9999);
-                        Array.Copy(data, 0, parts, 0, 9999);
+                        byte[] parts = new byte[CHUNK_SIZE];
+
+                        read += fs.Read(parts, 0, CHUNK_SIZE);
 
                         //Socket send mis bytes hasta ahora
 
-                        //NO SE COMO PASAR EL ARRAY DE BYTES parts en la request
+                        //Se pasa el primer dato mal. Buscar como se hace bien
+                        var stringBasedPart = Convert.ToBase64String(parts);
+                        miPrueba += stringBasedPart;
 
-                        string converted = Encoding.UTF8.GetString(parts, 0, parts.Length);
 
-                        //prueba la reconversion q se va a hacer en serverController
-                        byte[] receivedParts = Encoding.ASCII.GetBytes(converted);
 
-                        SocketConnection.SendMessage(BuildRequest(command, converted));
-                        var keepSendingResponse = new Response(SocketConnection.ReadMessage());
+                        //SocketConnection.SendMessage(BuildRequest(command, stringBasedPart));
+                        //var keepSendingResponse = new Response(SocketConnection.ReadMessage());
 
                         //Clear el array q mando
-                        Array.Clear(parts, 0, 9999);
                         times--;
+                    }
+                    try
+                    {
+                        string pathTest = Path.Combine(Environment.CurrentDirectory, "image.png");
+
+                        //prueba la reconversion q se va a hacer en serverController
+                        var img = Image.FromStream(new MemoryStream(Convert.FromBase64String(miPrueba)));
+                        img.Save(pathTest);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("No se pudo guardar el archivo");
                     }
                 }
             }else
@@ -527,5 +540,13 @@ namespace Client
                 Console.WriteLine(response.ErrorMessage());
             }
          }
+
+        public Image byteArrayToImage(byte[] byteArrayIn)
+        {
+            using (var ms = new MemoryStream(byteArrayIn))
+            {
+                return Image.FromStream(ms);
+            }
+        }
     }
 }
