@@ -5,13 +5,8 @@ using System.Threading;
 using System.Linq;
 using Protocol;
 using UI;
-using System.Text;
 using System.Drawing;
 using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Drawing;
-using System.Diagnostics;
 
 
 namespace Client
@@ -49,7 +44,6 @@ namespace Client
             {
                 Entities.Client client = AskForCredentials();
                 SocketConnection = clientProtocol.ConnectToServer();
-                PrepareSendingImage(client.Username);
                 object[] request = BuildRequest(Command.Login, client.Username, client.Password);
                 SocketConnection.SendMessage(request);
                 var response = new Response(SocketConnection.ReadMessage());
@@ -58,6 +52,7 @@ namespace Client
                 {
                     clientToken = response.GetClientToken();
                     clientUsername = client.Username;
+                    UploadImage(client.Username);
                     Console.WriteLine(ClientUI.LoginSuccessful());
                 }
                 else
@@ -471,73 +466,65 @@ namespace Client
             return near;
         }
 
-         private void PrepareSendingImage(string username)
+         private void UploadImage(string username)
          {
-             //Esta foto pesa 54 kb, va de ejemplo
-             string path = @"C:\Users\Usuario\Desktop\03.png";
+            //Path: Pedir por pantalla escribir el path de una foto existente en tu pc. Por ej: "C:\Users\Usuario\Desktop\03.png". A eso hay q agregarle una @ y las comillas al principio y final como abajo:
+            //Esta foto pesa 54 kb, va de ejemplo
+            string path = @"C:\Users\Usuario\Desktop\03.png";
             const int CHUNK_SIZE = 9999;
-            FileInfo fileInfo = new FileInfo(path);
-
-             //Osea 54593 bytes
-             byte[] data = new byte[fileInfo.Length];
-
-             int totalLength = data.Length;
-
-
-            Command command = Command.SendPicturePart;
-
-            double times = (double)totalLength / CHUNK_SIZE;
-
-            SocketConnection.SendMessage(BuildRequest(Command.ReadyToSendPicture, username, totalLength, path));
-            var response = new Response(SocketConnection.ReadMessage());
-
-            if (response.HadSuccess())
+            try
             {
-                String miPrueba = String.Empty;
-                // Load a filestream and put its content into the byte[]
-                using (FileStream fs = fileInfo.OpenRead())
+                FileInfo fileInfo = new FileInfo(path);
+                string extension = fileInfo.Extension;
+
+                //Osea 54593 bytes
+                int totalLength = (int)fileInfo.Length;
+
+                Command command = Command.SendPicturePart;
+
+                double splittingTimes = (double)totalLength / CHUNK_SIZE;
+
+                SocketConnection.SendMessage(BuildRequest(Command.ReadyToSendPicture, username, totalLength, extension));
+                var response = new Response(SocketConnection.ReadMessage());
+
+                if (response.HadSuccess())
                 {
-                    var read = 0;
-                    while (read < totalLength)
+                    using (FileStream fs = fileInfo.OpenRead())
                     {
-                        if (times < 1)
+                        var read = 0;
+                        while (read < totalLength)
                         {
-                            command = Command.SendLastPicturePart;
+                            if (splittingTimes < 1 || splittingTimes == 1) //Es la ultima tanda de bytes
+                            {
+                                command = Command.SendLastPicturePart;
+                            }
+                            byte[] parts = new byte[CHUNK_SIZE];
+
+                            read += fs.Read(parts, 0, CHUNK_SIZE);
+
+                            var stringBasedPart = Convert.ToBase64String(parts);
+
+                            //Mando por partes
+                            SocketConnection.SendMessage(BuildRequest(command, stringBasedPart));
+                            var keepSendingResponse = new Response(SocketConnection.ReadMessage());
+
+                            splittingTimes--;
+
+                            if (!keepSendingResponse.HadSuccess())
+                            {
+                                Console.WriteLine("Picture coudn't be uploaded");
+                                break;
+                            }
                         }
-                        byte[] parts = new byte[CHUNK_SIZE];
-
-                        read += fs.Read(parts, 0, CHUNK_SIZE);
-
-                        //Socket send mis bytes hasta ahora
-
-                        //Se pasa el primer dato mal. Buscar como se hace bien
-                        var stringBasedPart = Convert.ToBase64String(parts);
-                        miPrueba += stringBasedPart;
-
-
-
-                        //SocketConnection.SendMessage(BuildRequest(command, stringBasedPart));
-                        //var keepSendingResponse = new Response(SocketConnection.ReadMessage());
-
-                        //Clear el array q mando
-                        times--;
-                    }
-                    try
-                    {
-                        string pathTest = Path.Combine(Environment.CurrentDirectory, "image.png");
-
-                        //prueba la reconversion q se va a hacer en serverController
-                        var img = Image.FromStream(new MemoryStream(Convert.FromBase64String(miPrueba)));
-                        img.Save(pathTest);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("No se pudo guardar el archivo");
                     }
                 }
-            }else
+                else
+                {
+                    Console.WriteLine(response.ErrorMessage());
+                }
+            }catch(Exception e)
             {
-                Console.WriteLine(response.ErrorMessage());
+                Console.WriteLine("The path is invalid, we couldnt upload the picture."); //Ver si volver a pedir o se jode(lo mas facil)
             }
          }
 

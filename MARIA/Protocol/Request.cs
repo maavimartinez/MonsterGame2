@@ -55,7 +55,7 @@ namespace Protocol
             return requestObject[3];
         }
 
-        public string PicturePath()
+        public string PictureExtension()
         {
             return requestObject[4];
         }

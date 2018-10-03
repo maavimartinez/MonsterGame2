@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System;
 using System.Text;
 using System.IO;
+using System.Drawing;
 using Protocol;
 
 namespace Server
@@ -17,11 +18,11 @@ namespace Server
 
         private readonly GameLogic gameLogic;
 
-        private byte[] picture;
+        private string picture = string.Empty;
 
         private string picturesUsername;
 
-        private string path;
+        private string extension;
 
         private int parts = 0;
 
@@ -291,48 +292,36 @@ namespace Server
 
         public void SendPicturePart(Connection connection, Request request)
         {
-            //NO SE EN Q FORMATO VIENE MI ARRAY DE BYTES DE LA FOTO
-
-            byte[] receivedParts = Encoding.ASCII.GetBytes(request.Bytes()); 
-            if (parts == 0)
-            {
-                Array.Copy(picture, parts, receivedParts, 0, 9999);
-            }else
-            {
-                Array.Copy(picture, parts + 1, receivedParts, 0, 9999);
-            }
-
-            parts += parts + 9999;
-
+            picture += request.Bytes();
             connection.SendMessage(BuildResponse(ResponseCode.Ok));
 
         }
 
         public void SendLastPicturePart(Connection connection, Request request)
         {
+            picture += request.Bytes();
 
-            //Aca pongo la ultima pieza y armo la foto y la guardo en el directorio.
+            try
+            {
+                //La foto se guarda con tu nombre en Server/bin/Debug que es donde esta corriendo el server (exe)
+                string pathTest = Path.Combine(Environment.CurrentDirectory, picturesUsername+extension);
 
-     //       var buffer = new byte[bufsize];
-            // NetworkStream ns = socket.GetStream();
-
-       //     string s = request.Picture();
-
-            /* using (FileStream s = request.Picture())
-             {
-                 int actuallyRead;
-                 while ((actuallyRead = s.Read(buffer, 0, bufsize)) > 0)
-                 {
-                     s.Write(buffer, 0, actuallyRead);
-                 }*/
+                var img = Image.FromStream(new MemoryStream(Convert.FromBase64String(picture)));
+                img.Save(pathTest);
+                connection.SendMessage(BuildResponse(ResponseCode.Ok));
+            }
+            catch (Exception ex)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.BadRequest, ex.Message));
+            }
 
         }
 
         public void ReadyToSendPicture(Connection connection, Request request)
         {
-            picture = new byte[Int32.Parse(request.PictureLength())];
+            picture = string.Empty;
             picturesUsername = request.Username();
-            path = request.PicturePath();
+            extension = request.PictureExtension();
 
             connection.SendMessage(BuildResponse(ResponseCode.Ok));
         }
