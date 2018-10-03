@@ -486,7 +486,7 @@ namespace Client
 
             Command command = Command.SendPicturePart;
 
-            double times = totalLength / CHUNK_SIZE;
+            double times = (double)totalLength / CHUNK_SIZE;
 
             SocketConnection.SendMessage(BuildRequest(Command.ReadyToSendPicture, username, totalLength, path));
             var response = new Response(SocketConnection.ReadMessage());
