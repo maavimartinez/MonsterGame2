@@ -10,7 +10,7 @@ namespace Business
     public class GameLogic
     {
 
-        private Store Store { get; set; }
+        public Store Store { get; set; }
         private Server Server { get; set; }
         private ActionLogic ActionLogic { get; set; }
         private PlayerLogic PlayerLogic { get; set; }

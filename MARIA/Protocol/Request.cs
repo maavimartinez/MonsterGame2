@@ -1,4 +1,8 @@
-﻿namespace Protocol
+﻿using System;
+using System.Text;
+using System.Collections.Generic;
+
+namespace Protocol
 {
     public class Request
     {
@@ -25,6 +29,12 @@
         {
             return requestObject[2];
         }
+
+        public string Bytes()
+        {
+            return requestObject[2];
+        }
+
         public string Recipient()
         {
           return requestObject[2];  
@@ -40,10 +50,14 @@
             return requestObject[3];
         }
 
-        public string Picture()
+        public string PictureLength()
         {
-            return requestObject[2];
+            return requestObject[3];
         }
 
+        public string PicturePath()
+        {
+            return requestObject[4];
+        }
     }
 }
