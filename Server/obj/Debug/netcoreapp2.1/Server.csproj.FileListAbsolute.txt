@@ -1,4 +1,0 @@
-/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Server/obj/Debug/netcoreapp2.1/Server.csprojAssemblyReference.cache
-/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Server/obj/Debug/netcoreapp2.1/Server.csproj.CoreCompileInputs.cache
-/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Server/obj/Debug/netcoreapp2.1/Server.AssemblyInfoInputs.cache
-/Users/mariavictoriamartinez/Documents/ORT/Agosto2018/ProgramaciondeRedes/Repo/MonsterGame/Server/obj/Debug/netcoreapp2.1/Server.AssemblyInfo.cs

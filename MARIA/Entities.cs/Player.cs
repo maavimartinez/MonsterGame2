@@ -10,13 +10,11 @@ namespace Entities
 
         public int  AP       { get; set; }
 
-        public bool isAlive  { get; set; }
+        public bool IsAlive  { get; set; }
 
         public int  NumOfActions { get; set; }
 
         public Cell Position { get;set; }
-
-        public Player(){}
 
     }
     

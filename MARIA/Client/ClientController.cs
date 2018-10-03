@@ -22,7 +22,6 @@ namespace Client
         private Connection TimeControllerConnection { get; set; }
         private bool timesOut = false;
         private bool exitGame = false;
-        private bool playerIsDead = false;
         private Thread timer;
 
         public ClientController()
@@ -79,7 +78,15 @@ namespace Client
                 int option = Menus.ClientControllerLoopMenu();
                 if (option == 3) exit = true;
                 MapOptionToActionOfMainMenu(option);
-                ClientUI.Clear();
+                if (!exitGame)
+                {
+                    ClientUI.Clear();
+                }
+                if (exitGame)
+                {
+                    ClientUI.ClearBoard();
+                }
+                exitGame = false;
             }
         }
 
@@ -217,7 +224,6 @@ namespace Client
 
         private void Play()
         {
-            playerIsDead = false;
             exitGame = false;
             timesOut = false;
             int input = Menus.SelectRoleMenu();
@@ -259,17 +265,18 @@ namespace Client
                    timer.Start();
                 }
 
-                while ((!exitGame || !timesOut) && !playerIsDead)
+                while (!exitGame && !timesOut)
                 {
 
                     string myAction = Input.RequestInput();
                      
-                    if (timesOut) break;
+                    if (timesOut) goto End;
 
                     if (myAction.Equals("exit"))
                     {
                         RemovePlayerFromGame();
                         exitGame = true;
+                        goto End;
                     }
                     else
                     {
@@ -288,7 +295,7 @@ namespace Client
                             Console.WriteLine(sendActionResponse.ErrorMessage());
                             if (sendActionResponse.ErrorMessage() == "You are dead and can no longer play")
                             {
-                                playerIsDead = true;
+                                goto PlayerIsDead;
                             }
                             else
                             {
@@ -302,17 +309,18 @@ namespace Client
                         }
                     }
                 }
-                if (playerIsDead)
-                {
-                    string st = AskServerIfGameHasFinished();
-                }
             }
             else
             {
                 Console.WriteLine(response.ErrorMessage());
-                string st = AskServerIfGameHasFinished();
+                string aux = AskServerIfGameHasFinished();
             }
-            
+
+        PlayerIsDead:
+            string st = AskServerIfGameHasFinished();
+        End:
+            Console.WriteLine("Type any key to continue...");
+
         }
 
         public void RemovePlayerFromGame()
@@ -373,8 +381,7 @@ namespace Client
                 if (sendActionResponse.GameHasFinished())
                 {
                     GetResultByTimesOut();
-                }
-                   
+                }       
             }
         }
 
@@ -394,11 +401,12 @@ namespace Client
                 if(responseMessage[i] == "FINISHED")
                 {
                     if (timesOut2)  Console.WriteLine("Active Game's time is over!. You can now join a new game.");
-                  //  if (!timesOut2) Console.WriteLine("Game is over! ");
+                    if (!timesOut2) Console.WriteLine("Game is over! ");
                     Console.WriteLine(responseMessage[i + 1]);
                     exitGame = true;
                     timesOut = true;
                     timer = null;
+                    Console.WriteLine("Insert any key to continue...");
                 }
             }
         }

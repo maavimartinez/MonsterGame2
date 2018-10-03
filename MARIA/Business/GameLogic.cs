@@ -167,7 +167,7 @@ namespace Business
                     ret.Add(ActiveGameResult);
                 }
                 Player player = GetLoggedPlayer(usernameFrom);
-                if (!player.isAlive) throw new LoggedPlayerIsDeadException();
+                if (!player.IsAlive) throw new LoggedPlayerIsDeadException();
                 ret = ret.Concat(ActionLogic.DoAction(player, action)).ToList();
                 List<string> ended = CheckIfGameHasEnded();
                 if (ended != null) ret = ret.Concat(ended).ToList();
@@ -175,7 +175,7 @@ namespace Business
             }
         }
 
-        private bool TimeHasPassed(int minutes)
+        private bool TimeHasPassed(double minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
             DateTime endTime = startTime.AddMinutes(minutes);
@@ -191,7 +191,7 @@ namespace Business
 
         public void TimesOut()
         {
-            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(10))
+            if (Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(0.4))
             {
                 throw new TimesOutException("");
             }
@@ -204,7 +204,7 @@ namespace Business
             int alivePlayers = 0;
             foreach (Player pl in Store.AllPlayers)
             {
-                if (pl.isAlive)
+                if (pl.IsAlive)
                 {
                     alivePlayers++;
                     if (pl is Monster) aliveMonsters = aliveMonsters + pl.Client.Username + ",";
@@ -259,7 +259,7 @@ namespace Business
             int alivePlayers = 0;
             foreach (Player pl in Store.AllPlayers)
             {
-                if (pl.isAlive)
+                if (pl.IsAlive)
                 {
                     alivePlayers++;
                     if (pl is Monster) aliveMonsters = aliveMonsters + pl.Client.Username + ",";
@@ -303,7 +303,7 @@ namespace Business
             ret.Add("PLAYERS");
             foreach (Player pl in Store.ActiveGame.Players)
             {
-                string status = (pl.isAlive) ? "Alive" : "Dead";
+                string status = (pl.IsAlive) ? "Alive" : "Dead";
                 ret.Add(pl.Client.Username + "(" + status + ")");
             }
             return ret;

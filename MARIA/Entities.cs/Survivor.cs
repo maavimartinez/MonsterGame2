@@ -9,7 +9,7 @@ namespace Entities
         {
             HP = 20;
             AP = 5;
-            isAlive = true;
+            IsAlive = true;
         }
 
         public override string ToString()
