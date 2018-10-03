@@ -24,8 +24,6 @@ namespace Server
 
         private string extension;
 
-        private int parts = 0;
-
         public ServerController(GameLogic gameLogic)
         {
             this.gameLogic = gameLogic;
