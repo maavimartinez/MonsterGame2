@@ -189,9 +189,11 @@ namespace Business
             }
         }
 
-        public void TimesOut()
+        public void TimesOut(string lastPlayerWantsToLeave)
         {
-            if ((Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(0.3)))
+            bool aux = false;
+            if (lastPlayerWantsToLeave.Equals("true", StringComparison.OrdinalIgnoreCase)) aux = true;
+            if ((Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)) || aux)
             {
                 throw new TimesOutException("");
             }

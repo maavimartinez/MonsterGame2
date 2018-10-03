@@ -50,6 +50,11 @@ namespace Protocol
             return requestObject[3];
         }
 
+        public string LastPlayerWantsToLeave()
+        {
+            return requestObject[2];
+        }
+
         public string PictureLength()
         {
             return requestObject[3];

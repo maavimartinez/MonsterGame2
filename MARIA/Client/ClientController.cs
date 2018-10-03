@@ -22,6 +22,7 @@ namespace Client
         private Connection TimeControllerConnection { get; set; }
         private bool timesOut = false;
         private bool exitGame = false;
+        private bool LastPlayerWantsToLeave = false;
         private Thread timer;
 
         public ClientController()
@@ -309,12 +310,13 @@ namespace Client
         {
             exitGame = false;
             timesOut = false;
+            LastPlayerWantsToLeave = false;
             int input = Menus.SelectRoleMenu();
             input --;
             string role="";
             if(input == 0) role = "Monster";
             if(input == 1) role = "Survivor";
-         //   if(input == 2) goto End;
+            if(input == 2) goto End;
 
             SocketConnection.SendMessage(BuildRequest(Command.SelectRole, role));
 
@@ -324,13 +326,13 @@ namespace Client
             {
                 Console.WriteLine("You are now a " + role);
                 JoinGame();
-         //       goto End;
+                goto End;
             }
             else
             {
                 Console.WriteLine(response.ErrorMessage());
             }
-        //    End:;
+            End:;
         }
 
         private void JoinGame()
@@ -356,13 +358,12 @@ namespace Client
 
                     string myAction = Input.RequestInput();
                      
-                    if (timesOut) break;
+                    if (timesOut) goto End;
 
                     if (myAction.Equals("exit"))
                     {
                         RemovePlayerFromGame();
                         exitGame = true;
-                        Console.WriteLine("Type any key to continue...");
                     }
                     else
                     {
@@ -402,6 +403,7 @@ namespace Client
                 Console.WriteLine(response.ErrorMessage());
                 string aux = AskServerIfGameHasFinished();
             }
+            End:;
         }
 
         public void RemovePlayerFromGame()
@@ -455,7 +457,9 @@ namespace Client
             TimeControllerConnection = clientProtocol.ConnectToServer();
             while (!timesOut)
             {
-                TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut));
+                string aux = "false";
+                if (LastPlayerWantsToLeave) aux = "true";
+                TimeControllerConnection.SendMessage(BuildRequest(Command.TimesOut, aux));
 
                 var response = new Response(TimeControllerConnection.ReadMessage());
 
@@ -481,15 +485,20 @@ namespace Client
             {
                 if(responseMessage[i] == "FINISHED")
                 {
+                    if(responseMessage[i+1].Equals("Game has finished", StringComparison.OrdinalIgnoreCase))
+                    {
+                        LastPlayerWantsToLeave = true;
+                        goto End;
+                    }
                     if (timesOut2)  Console.WriteLine("Active Game's time is over!. You can now join a new game.");
                     if (!timesOut2) Console.WriteLine("Game is over! ");
                     Console.WriteLine(responseMessage[i + 1]);
                     exitGame = true;
                     timesOut = true;
                     timer = null;
-                    Console.WriteLine("Insert any key to continue...");
                 }
             }
+            End:;
         }
 
 

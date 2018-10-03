@@ -221,7 +221,7 @@ namespace Server
         {
             try
             {
-                gameLogic.TimesOut();
+                gameLogic.TimesOut(request.LastPlayerWantsToLeave());
                 connection.SendMessage(BuildResponse(ResponseCode.Ok));
             }
             catch (TimesOutException e)
