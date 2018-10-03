@@ -9,12 +9,23 @@ namespace Client
     {
         private static ClientController clientController = new ClientController();
 
+        private const int MF_BYCOMMAND = 0x00000000;
+        public const int SC_CLOSE = 0xF060;
+
+        [DllImport("user32.dll")]
+        public static extern int DeleteMenu(IntPtr hMenu, int nPosition, int wFlags);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+        [DllImport("kernel32.dll", ExactSpelling = true)]
+        private static extern IntPtr GetConsoleWindow();
+
         static void Main(string[] args)
         {
             try
             {
-             //   handler = new ConsoleEventDelegate(ConsoleEventCallback);
-           //     AppDomain.CurrentDomain.ProcessExit += new EventHandler(CurrentDomain_ProcessExit);
+              //  DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND);
                 clientController.LoopMenu();
             }
             catch (SocketException e)
@@ -26,26 +37,12 @@ namespace Client
             catch (Exception e)
             {
                 Console.WriteLine("There was a problem with something you did, the app will exit");
-                clientController.DisconnectFromServer();
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
+                Console.Clear();
                 Environment.Exit(1);
             }
         }
 
-        static void CurrentDomain_ProcessExit(object sender, EventArgs e)
-        {
-                Console.WriteLine("Console window closing, disconnecting client");
-                clientController.RemovePlayerFromGame();
-                clientController.DisconnectFromServer();
-        }
-
-        private static bool IsConsoleClosing(int eventType)
-        {
-            return eventType == 2;
-        }
-
-        static ConsoleEventDelegate handler;
-        private delegate bool ConsoleEventDelegate(int eventType);
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
     }
 }

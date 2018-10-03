@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Threading;
 using Business;
+using Business.Exceptions;
 using Persistence;
 using Protocol;
 using UI;
+using System.Runtime.InteropServices;
 
 namespace Server
 {
@@ -16,6 +18,17 @@ namespace Server
         private static bool endServer = false;
         private static List<Thread> threads = new List<Thread>();
         private static List<Connection> connections = new List<Connection>();
+        private const int MF_BYCOMMAND = 0x00000000;
+        public const int SC_CLOSE = 0xF060;
+
+        [DllImport("user32.dll")]
+        public static extern int DeleteMenu(IntPtr hMenu, int nPosition, int wFlags);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+        [DllImport("kernel32.dll", ExactSpelling = true)]
+        private static extern IntPtr GetConsoleWindow();
 
         static void Main(string[] args)
         {
@@ -25,6 +38,7 @@ namespace Server
             server.Start(ip, port);
             var gameLogic = new GameLogic(new Store());
 
+            DeleteMenu(GetSystemMenu(GetConsoleWindow(), false), SC_CLOSE, MF_BYCOMMAND);
             var thread = new Thread(() =>
             {
                 var router = new Router(new ServerController(gameLogic));
@@ -41,9 +55,9 @@ namespace Server
                                 connections.Add(conn);
                                 router.Handle(conn);
                             }
-                            catch (Exception) //Aca pueden caer SocketExceptions y otras
+                            catch (Exception) 
                             {
-                                endServer = true;
+                               endServer = true;
                             }
                         });
                         threads.Add(clientThread);
@@ -72,15 +86,15 @@ namespace Server
                 }
 
             }
-            CloseServer(server);
+            CloseServer(server,gameLogic);
         }
 
         private static bool GameIsOff(GameLogic controller)
         {
-            return controller.Store.ActiveGame != null && !controller.Store.ActiveGame.isOn;
+            return controller.Store.ActiveGame == null || !controller.Store.ActiveGame.isOn;
         }
 
-        private static void CloseServer(ServerProtocol server)
+        private static void CloseServer(ServerProtocol server, GameLogic gameLogic)
         {
             try
             {
@@ -96,7 +110,7 @@ namespace Server
                 foreach (Connection connection in connections)
                 {
                     try
-                    { 
+                    {
                         connection.Close();
                     }
                     catch (Exception)
@@ -161,6 +175,7 @@ namespace Server
                 Console.WriteLine("\n -> Game in process, try again when it has finished.\n");
             }
         }
+
 
         private static string GetServerIpFromConfigFile()
         {

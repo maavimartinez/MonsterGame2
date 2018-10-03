@@ -82,6 +82,7 @@ namespace Client
                     DisconnectFromServer();
                     break;
             }
+
         }
 
         private void ConnectToServer()
@@ -466,6 +467,7 @@ namespace Client
                 if (response.GameHasFinished())
                 {
                     GetResultByTimesOut();
+                    Console.WriteLine("Insert any key to continue...");
                 }
             }
         }
@@ -500,7 +502,6 @@ namespace Client
             }
             End:;
         }
-
 
         private void RefreshBoard(List<string> response)
         {

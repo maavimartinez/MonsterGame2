@@ -193,7 +193,7 @@ namespace Business
         {
             bool aux = false;
             if (lastPlayerWantsToLeave.Equals("true", StringComparison.OrdinalIgnoreCase)) aux = true;
-            if ((Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)) || aux)
+            if ((Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(0.3)) || aux)
             {
                 throw new TimesOutException("");
             }
