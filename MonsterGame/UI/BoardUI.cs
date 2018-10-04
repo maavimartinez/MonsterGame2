@@ -7,11 +7,10 @@ namespace UI
     public static class BoardUI
     {
 
-        public static void DrawBoard(string username, string playerPosition, List<string> usernamesAndStatus){
+        public static void DrawBoard(string username, string playerPosition){
             Console.Clear();
             Console.WriteLine(ClientUI.Title());
             ShowShortRules();
-            ShowOnGameUsernamesAndStatus(usernamesAndStatus);
             int[] pos = GetIntPosition(playerPosition);
             if (pos != null)
             {
@@ -53,18 +52,6 @@ namespace UI
             Console.WriteLine("- Moves can be made in all directions with radius 1.");
             Console.WriteLine("- Commands ignore case and blank spaces");
             Console.WriteLine("");
-        }
-
-        private static void ShowOnGameUsernamesAndStatus(List<string> opponents)
-        {
-            if (opponents.Count > 0)
-            {
-                Console.WriteLine("On-Game Players: ");
-                foreach (string st in opponents)
-                {
-                    Console.WriteLine("->" + st);
-                }
-            }
         }
 
         public static void ShowHP(string hp)
@@ -115,6 +102,7 @@ namespace UI
                 return null;
             }
         }
+
     }
 
 }

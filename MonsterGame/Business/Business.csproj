@@ -44,6 +44,7 @@
     <Compile Include="Exceptions\ActionException.cs" />
     <Compile Include="Exceptions\CellAlreadyContainsAPlayer.cs" />
     <Compile Include="Exceptions\FullGameException.cs" />
+    <Compile Include="Exceptions\LastPlayerAbandonedGameException.cs" />
     <Compile Include="Exceptions\LoggedPlayerIsDeadException.cs" />
     <Compile Include="Exceptions\MovementOutOfBoundsException.cs" />
     <Compile Include="Exceptions\NoMonstersInGameException.cs" />

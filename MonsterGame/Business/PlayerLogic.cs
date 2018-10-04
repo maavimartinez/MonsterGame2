@@ -32,6 +32,26 @@ namespace Business
             Store.AllPlayers.Add(player);
         }
 
+        public void JoinPlayerToGame(Player loggedPlayer)
+        {
+            if (Store.ActiveGame.Players.Count < 4 && !TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
+            {
+                Store.ActiveGame.Players.Add(loggedPlayer);
+                loggedPlayer.NumOfActions = GetMaxTurn();
+                LocatePlayersInBoard();
+            }
+            else if (!TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
+            {
+                var remainingTime = Store.ActiveGame.StartTime.AddMinutes(3) - (DateTime.Now - Store.ActiveGame.StartTime);
+                throw new FullGameException("Game is full, try again at " + remainingTime.ToString("HH:mm"));
+            }
+            else
+            {
+                var remainingTime = Store.ActiveGame.StartTime.AddMinutes(3) - (DateTime.Now - Store.ActiveGame.StartTime);
+                throw new FullGameException("You can no longer join this game, try again at " + remainingTime.ToString("HH:mm"));
+            }
+        }
+
         private void CheckIfGameHasMonster()
         {
             if (Store.ActiveGame != null && Store.ActiveGame.Players.Count() == 3)
@@ -45,27 +65,7 @@ namespace Business
             }
         }
 
-        public void JoinPlayerToGame(Player loggedPlayer)
-        {
-            if (Store.ActiveGame.Players.Count < 4)
-            {
-                Store.ActiveGame.Players.Add(loggedPlayer);
-                loggedPlayer.NumOfActions = GetMaxTurn();
-                LocatePlayersInBoard();
-            }
-            else if (TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
-            {
-                var remainingTime = DateTime.Now - Store.ActiveGame.StartTime;
-                throw new FullGameException("Game is full, try again in " + remainingTime.ToString());
-            }
-            else
-            {
-                var remainingTime = DateTime.Now - Store.ActiveGame.StartTime;
-                throw new FullGameException("You can no longer join this game, try again in " + remainingTime.ToString());
-            }
-        }
-
-        private bool TimeHasPassed(int minutes)
+        private bool TimeHasPassed(double minutes)
         {
             DateTime startTime = Store.ActiveGame.StartTime;
             DateTime endTime = startTime.AddMinutes(minutes);
@@ -122,8 +122,6 @@ namespace Business
             if (max % 2 == 1) max = max - 1;
             return max;
         }
-
-
 
     }
 }

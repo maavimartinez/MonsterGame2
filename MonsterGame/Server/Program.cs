@@ -176,7 +176,6 @@ namespace Server
             }
         }
 
-
         private static string GetServerIpFromConfigFile()
         {
             var appSettings = new AppSettingsReader();

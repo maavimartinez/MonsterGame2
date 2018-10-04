@@ -43,7 +43,7 @@ namespace Server
                 string token = gameLogic.Login(client);
 
                 object[] response = string.IsNullOrEmpty(token)
-                    ? BuildResponse(ResponseCode.NotFound, "Client not found")
+                    ? BuildResponse(ResponseCode.NotFound, "Client not found. Wrong username or password.")
                     : BuildResponse(ResponseCode.Ok, token);
                 connection.SendMessage(response);
             }
@@ -154,14 +154,16 @@ namespace Server
 
                 List<string> response = new List<string>();
                 response.Add(GetPlayerPosition(loggedUser.Username));
-                List<string> onGameUsernames = gameLogic.GetOnGameUsernamesAndStatus();
-                response = response.Concat(onGameUsernames).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, response.ToArray()));
             }
             catch (ClientNotConnectedException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.Unauthorized, e.Message));
+            }
+            catch (FullGameException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
             }
         }
 
@@ -175,9 +177,9 @@ namespace Server
                 string action = request.Action();
 
                 List<string> answer = new List<string>();
+
                 answer = answer.Concat(gameLogic.DoAction(usernameFrom, action)).ToList();
                 answer.Insert(0, GetPlayerPosition(loggedUser.Username));
-                answer = answer.Concat(gameLogic.GetOnGameUsernamesAndStatus()).ToList();
 
                 connection.SendMessage(BuildResponse(ResponseCode.Ok, answer.ToArray()));
             }
@@ -227,7 +229,10 @@ namespace Server
             catch (TimesOutException e)
             {
                 connection.SendMessage(BuildResponse(ResponseCode.GameFinished, e.Message));
-
+                connection.Close();
+            }catch(LastPlayerAbandonedGameException e)
+            {
+                connection.SendMessage(BuildResponse(ResponseCode.BadRequest, e.Message));
                 connection.Close();
             }
             catch (RecordNotFoundException e)

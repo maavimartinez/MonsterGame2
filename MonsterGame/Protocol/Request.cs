@@ -6,6 +6,7 @@ namespace Protocol
 {
     public class Request
     {
+
         private readonly string[] requestObject;
 
         public Request(string[] request)
@@ -66,4 +67,5 @@ namespace Protocol
         }
 
     }
+
 }

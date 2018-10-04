@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 
 namespace Protocol
@@ -24,5 +23,7 @@ namespace Protocol
 
             return new Connection(socket);
         }
+
     }
+
 }

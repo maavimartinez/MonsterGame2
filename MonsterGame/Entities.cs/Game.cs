@@ -13,7 +13,7 @@ namespace Entities
 
         public DateTime StartTime { get; set; }
 
-        public int  LimitJoiningTime { get; set; }
+        public double  LimitJoiningTime { get; set; }
 
         public bool isOn { get; set; }
 
@@ -21,7 +21,7 @@ namespace Entities
 
         public Game()
         {
-            LimitJoiningTime = 2;
+            LimitJoiningTime = 0.3;
             Players = new List <Player>();
             isOn = false;
             Result = "";

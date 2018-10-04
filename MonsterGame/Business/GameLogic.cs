@@ -128,6 +128,7 @@ namespace Business
             {
                 if (loggedClient == null)
                     throw new ClientNotConnectedException();
+
                 PlayerLogic.SelectRole(loggedClient, role);
             }
         }
@@ -143,49 +144,42 @@ namespace Business
             }
         }
 
-        private void InitializeGame()
-        {
-            if (Store.ActiveGame == null) Store.ActiveGame = new Game();
-            if (Store.Board      == null) Store.Board = new Board();
-            if (Store.ActiveGame.Players.Count == 0)
-            {
-                Store.ActiveGame.isOn = true;
-                Store.ActiveGame.StartTime = DateTime.Now;
-                ActiveGameResult = "";
-                Store.Board.InitializeBoard();
-            }
-        }
-
         public List<string> DoAction(string usernameFrom, string action)
         {
             lock (doActionLock)
             {
                 List<string> ret = new List<string>();
+               
+                Player player = GetLoggedPlayer(usernameFrom);
+                if (!player.IsAlive) throw new LoggedPlayerIsDeadException();
                 if (!Store.ActiveGame.isOn)
                 {
                     ret.Add("FINISHED");
-                    ret.Add(ActiveGameResult);
+                    ret.Add(ActiveGameResult.ToUpper());
+                    return ret;
+                }else
+                {
+                    
+                    try
+                    {
+                        ret = ret.Concat(ActionLogic.DoAction(player, action)).ToList();
+                        List<string> ended = CheckIfGameHasEnded();
+                        if (ended != null) ret = ret.Concat(ended).ToList();
+                    }
+                    catch(WaitForTurnException)
+                    {
+                        List<string> ended = CheckIfGameHasEnded();
+                        if (ended != null)
+                        {
+                            ret = ret.Concat(ended).ToList();
+                        }
+                        else
+                        {
+                            throw new WaitForTurnException();
+                        }
+                    }
+                    return ret;
                 }
-                Player player = GetLoggedPlayer(usernameFrom);
-                if (!player.IsAlive) throw new LoggedPlayerIsDeadException();
-                ret = ret.Concat(ActionLogic.DoAction(player, action)).ToList();
-                List<string> ended = CheckIfGameHasEnded();
-                if (ended != null) ret = ret.Concat(ended).ToList();
-                return ret;
-            }
-        }
-
-        private bool TimeHasPassed(double minutes)
-        {
-            DateTime startTime = Store.ActiveGame.StartTime;
-            DateTime endTime = startTime.AddMinutes(minutes);
-            DateTime now = DateTime.Now;
-            if (now < endTime)
-            {
-                return false;
-            }else
-            {
-                return true;
             }
         }
 
@@ -193,7 +187,8 @@ namespace Business
         {
             bool aux = false;
             if (lastPlayerWantsToLeave.Equals("true", StringComparison.OrdinalIgnoreCase)) aux = true;
-            if ((Store.ActiveGame != null && Store.ActiveGame.isOn && TimeHasPassed(3)) || aux)
+            if (aux) throw new LastPlayerAbandonedGameException();
+            if (( TimeHasPassed(0.6)))
             {
                 throw new TimesOutException("");
             }
@@ -204,7 +199,7 @@ namespace Business
             string aliveMonsters = "";
             string aliveSurvivors = "";
             int alivePlayers = 0;
-            foreach (Player pl in Store.AllPlayers)
+            foreach (Player pl in Store.ActiveGame.Players)
             {
                 if (pl.IsAlive)
                 {
@@ -235,13 +230,14 @@ namespace Business
                 Player player = GetLoggedPlayer(username);
                 if (player != null)
                 {
+                    Store.Board.Cells[player.Position.X, player.Position.Y].Player = null;
                     Store.ActiveGame.Players.Remove(player);
                     Store.AllPlayers.Remove(player);
-                    if (Store.AllPlayers.Count > 0)
+                    if (Store.ActiveGame.Players.Count > 0)
                     {
                         return CheckIfGameHasEnded();
                     }
-                    else if (Store.AllPlayers.Count == 0)
+                    else if (Store.ActiveGame.Players.Count == 0)
                     {
                         ActiveGameResult = "Game has finished";
                         return EndGame();
@@ -254,12 +250,51 @@ namespace Business
             }
         }
 
+        public List<string> EndGame() {
+            if (Store.ActiveGame != null)
+            {
+                Store.ActiveGame.isOn = false;
+                Store.ActiveGame.Result = "";
+                RemovePlayersFromAllPlayers();
+                Store.ActiveGame.Players.Clear();
+                List<string> ret = new List<string>();
+                ret.Add("FINISHED");
+                ret.Add(ActiveGameResult.ToUpper());
+                return ret;
+            }
+            return null;
+        }
+
+        public string GetGameResult()
+        {
+            if(ActiveGameResult != "")
+            {
+                return ActiveGameResult.ToUpper();
+            }else
+            {
+                return "GameNotFinished";
+            }   
+        }
+
+        private void InitializeGame()
+        {
+            if (Store.ActiveGame == null) Store.ActiveGame = new Game();
+            if (Store.Board == null) Store.Board = new Board();
+            if (Store.ActiveGame.Players.Count == 0)
+            {
+                Store.ActiveGame.isOn = true;
+                Store.ActiveGame.StartTime = DateTime.Now;
+                ActiveGameResult = "";
+                Store.Board.InitializeBoard();
+            }
+        }
+
         private List<string> CheckIfGameHasEnded()
         {
             string aliveMonsters = "";
             string aliveSurvivors = "";
             int alivePlayers = 0;
-            foreach (Player pl in Store.AllPlayers)
+            foreach (Player pl in Store.ActiveGame.Players)
             {
                 if (pl.IsAlive)
                 {
@@ -276,51 +311,35 @@ namespace Business
             }
             else if (alivePlayers == 1 && aliveSurvivors == "" && TimeHasPassed(Store.ActiveGame.LimitJoiningTime))
             {
-                aliveMonsters = aliveMonsters.Trim(',');    
+                aliveMonsters = aliveMonsters.Trim(',');
                 ActiveGameResult = aliveMonsters + " won !";
                 return EndGame();
             }
-            return null;
+            return new List<string>();
         }
 
-        public List<string> EndGame() {
-            Game game = Store.ActiveGame;
-            if (game != null)
-            {
-                game.StartTime = DateTime.MinValue;
-                game.isOn = false;
-                game.Result = "";
-                Store.ActiveGame.Players.Clear();
-                List<string> ret = new List<string>();
-                ret.Add("FINISHED");
-                ret.Add(ActiveGameResult.ToUpper());
-                return ret;
-            }
-            return null;
-        }
-
-        public List<string> GetOnGameUsernamesAndStatus()
+        private bool TimeHasPassed(double minutes)
         {
-            List<string> ret = new List<string>();
-            ret.Add("PLAYERS");
-            foreach (Player pl in Store.ActiveGame.Players)
+            DateTime startTime = Store.ActiveGame.StartTime;
+            DateTime endTime = startTime.AddMinutes(minutes);
+            DateTime now = DateTime.Now;
+            if (now < endTime)
             {
-                string status = (pl.IsAlive) ? "Alive" : "Dead";
-                ret.Add(pl.Client.Username + "(" + status + ")");
+                return false;
             }
-            return ret;
+            else
+            {
+                return true;
+            }
         }
 
-        public string GetGameResult()
+        private void RemovePlayersFromAllPlayers()
         {
-            if(ActiveGameResult != "")
+            foreach(Player pl in Store.ActiveGame.Players)
             {
-                return ActiveGameResult.ToUpper();
-            }else
-            {
-                return "GameNotFinished";
+                Store.AllPlayers.Remove(pl);
             }
-            
         }
+
     }
 }

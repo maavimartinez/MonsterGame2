@@ -6,6 +6,7 @@ namespace Protocol
 {
     public class Connection
     {
+
         private const int LengthByteSize = 4;
         private Socket Socket { get; set; }
 
@@ -100,4 +101,5 @@ namespace Protocol
         }
         
     }
+
 }

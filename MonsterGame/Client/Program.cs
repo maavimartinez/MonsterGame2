@@ -36,7 +36,7 @@ namespace Client
             }
             catch (Exception e)
             {
-                Console.WriteLine("There was a problem with something you did, the app will exit");
+                Console.WriteLine("There was a problem with the server, the app will exit");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
                 Console.Clear();

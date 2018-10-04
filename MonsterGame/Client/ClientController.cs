@@ -13,6 +13,7 @@ namespace Client
 {
     public class ClientController
     {
+
         private const double WaitTimeAumentation = 1.5;
         private const int InitialWaitTime = 100;
         private readonly ClientProtocol clientProtocol;
@@ -42,7 +43,6 @@ namespace Client
             bool exit = false;
             while (!exit)
             {
-              //  if (AskServerIfGameHasFinished().Equals("GameFinished")) Console.WriteLine("Game has finished pruebAAA");
                 Console.WriteLine(ClientUI.Title(clientUsername));
                 int option = Menus.ClientControllerLoopMenu();
                 if (option == 4) exit = true;
@@ -56,6 +56,29 @@ namespace Client
                     ClientUI.ClearBoard();
                 }
                 exitGame = false;
+            }
+        }
+
+        public void DisconnectFromServer()
+        {
+            SocketConnection.SendMessage(BuildRequest(Command.DisconnectClient));
+            var response = new Response(SocketConnection.ReadMessage());
+            if (response.HadSuccess())
+            {
+                Console.WriteLine("Disconnected");
+                Environment.Exit(1);
+            }
+            else
+            {
+                Console.WriteLine(response.ErrorMessage());
+            }
+        }
+
+        public Image byteArrayToImage(byte[] byteArrayIn)
+        {
+            using (var ms = new MemoryStream(byteArrayIn))
+            {
+                return Image.FromStream(ms);
             }
         }
 
@@ -109,21 +132,6 @@ namespace Client
                     Console.WriteLine(response.ErrorMessage());
                 }
             } while (!connected);
-        }
-
-        public void DisconnectFromServer()
-        {
-            SocketConnection.SendMessage(BuildRequest(Command.DisconnectClient));
-            var response = new Response(SocketConnection.ReadMessage());
-            if (response.HadSuccess())
-            {
-                Console.WriteLine("Disconnected");
-                Environment.Exit(1);
-            }
-            else
-            {
-                Console.WriteLine(response.ErrorMessage());
-            }
         }
 
         private bool ListConnectedClients()
@@ -185,11 +193,11 @@ namespace Client
 
         private void UploadImage(string username)
         {
-            AskForPath:
+        AskForPath:
             ClientUI.InsertAvatarPath();
             string path = Input.RequestInput();
             if (path.Equals("EXIT", StringComparison.OrdinalIgnoreCase)) goto End;
-            path = Path.Combine(path,"");
+            path = Path.Combine(path, "");
             const int CHUNK_SIZE = 9999;
             try
             {
@@ -212,7 +220,7 @@ namespace Client
                         var read = 0;
                         while (read < totalLength)
                         {
-                            if (splittingTimes < 1 || splittingTimes == 1) 
+                            if (splittingTimes < 1 || splittingTimes == 1)
                             {
                                 command = Command.SendLastPicturePart;
                             }
@@ -246,22 +254,14 @@ namespace Client
                 Console.WriteLine("\n -> The path is invalid.\n Please try again or type 'exit' to leave.\n");
                 goto AskForPath;
             }
-            End:;
-        }
-
-        public Image byteArrayToImage(byte[] byteArrayIn)
-        {
-            using (var ms = new MemoryStream(byteArrayIn))
-            {
-                return Image.FromStream(ms);
-            }
+        End:;
         }
 
         private void PrintPlayers(List<string> players)
         {
             players.ForEach(Console.WriteLine);
         }
-        
+
         private string GetServerIp()
         {
             var appSettings = new AppSettingsReader();
@@ -314,11 +314,11 @@ namespace Client
             timesOut = false;
             LastPlayerWantsToLeave = false;
             int input = Menus.SelectRoleMenu();
-            input --;
-            string role="";
-            if(input == 0) role = "Monster";
-            if(input == 1) role = "Survivor";
-            if(input == 2) goto End;
+            input--;
+            string role = "";
+            if (input == 0) role = "Monster";
+            if (input == 1) role = "Survivor";
+            if (input == 2) goto End;
 
             SocketConnection.SendMessage(BuildRequest(Command.SelectRole, role));
 
@@ -327,6 +327,7 @@ namespace Client
             if (response.HadSuccess())
             {
                 Console.WriteLine("You are now a " + role);
+                ClientUI.Clear();
                 JoinGame();
                 goto End;
             }
@@ -334,7 +335,7 @@ namespace Client
             {
                 Console.WriteLine(response.ErrorMessage());
             }
-            End:;
+        End:;
         }
 
         private void JoinGame()
@@ -343,23 +344,23 @@ namespace Client
 
             var response = new Response(SocketConnection.ReadMessage());
 
-            List<string> onGameUsernamesAndStatus = response.GetOnGameUsernamesAndStatus();
-            BoardUI.DrawBoard(clientUsername, response.GetPlayerPosition(), onGameUsernamesAndStatus);
-            Console.WriteLine("Action: ");
-
             if (response.HadSuccess())
             {
+
+                BoardUI.DrawBoard(clientUsername, response.GetPlayerPosition());
+                Console.WriteLine("Action: ");
+
                 if (timer == null)
                 {
-                   timer = new Thread(() => TimesOut());
-                   timer.Start();
+                    timer = new Thread(() => TimesOut());
+                    timer.Start();
                 }
 
                 while (!exitGame && !timesOut)
                 {
 
                     string myAction = Input.RequestInput();
-                     
+
                     if (timesOut) goto End;
 
                     if (myAction.Equals("exit"))
@@ -377,19 +378,24 @@ namespace Client
                         {
                             List<string> actionResponse = sendActionResponse.GetDoActionResponse();
                             RefreshBoard(actionResponse);
-                            ShowIfGameFinished(actionResponse,false);
+                            ShowIfGameFinished(actionResponse, false);
                         }
                         else if (sendActionResponse.IsInvalidAction())
                         {
                             Console.WriteLine(sendActionResponse.ErrorMessage());
-                            if (sendActionResponse.ErrorMessage() == "You are dead and can no longer play")
+                            Console.WriteLine("Action: ");
+                        }
+                        else if (sendActionResponse.PlayerIsDead())
+                        {
+                            Console.WriteLine(sendActionResponse.ErrorMessage());
+                            string st = AskServerIfGameHasFinished();
+                            if (st != "GameFinished")
                             {
-                                string st = AskServerIfGameHasFinished();
-                                Console.WriteLine("Type any key to continue...");
+                                Console.WriteLine("Please wait until game has finished. Type any key to continue...");
                             }
                             else
                             {
-                                Console.WriteLine("Action: ");
+                                goto End;
                             }
                         }
                         else
@@ -399,13 +405,18 @@ namespace Client
                         }
                     }
                 }
+                ClientUI.Clear();
+            }
+            else if (response.GameIsFull())
+            {
+                Console.WriteLine(response.ErrorMessage());
             }
             else
             {
                 Console.WriteLine(response.ErrorMessage());
                 string aux = AskServerIfGameHasFinished();
             }
-            End:;
+        End:;
         }
 
         public void RemovePlayerFromGame()
@@ -416,9 +427,9 @@ namespace Client
 
             if (response.HadSuccess())
             {
-                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse(),false);
+                ShowIfGameFinished(response.GetRemovePlayerFromGameResponse(), false);
             }
-            else 
+            else
             {
                 Console.WriteLine(response.ErrorMessage());
             }
@@ -427,7 +438,8 @@ namespace Client
         private string AskServerIfGameHasFinished()
         {
             bool exit = false;
-            while (!exit) {
+            while (!exit)
+            {
                 SocketConnection.SendMessage(BuildRequest(Command.CheckIfGameHasFinished));
 
                 var response = new Response(SocketConnection.ReadMessage());
@@ -435,12 +447,13 @@ namespace Client
                 if (response.HadSuccess())
                 {
                     string result = response.GetGameResult();
-                    if(result != "GameNotFinished")
+                    if (result != "GameNotFinished")
                     {
                         Console.WriteLine(result);
                         exit = true;
                         return "GameFinished";
-                    }else
+                    }
+                    else
                     {
                         return "GameNotFinished";
                     }
@@ -451,7 +464,7 @@ namespace Client
                     exit = true;
                 }
             }
-            return null; //chequear
+            return null;
         }
 
         private void TimesOut()
@@ -468,32 +481,40 @@ namespace Client
                 if (response.GameHasFinished())
                 {
                     GetResultByTimesOut();
-                    Console.WriteLine("Insert any key to continue...");
+                }
+                else if (response.LastPlayerAbandoned())
+                {
+                    timesOut = true;
+                    timer = null;
                 }
             }
         }
 
         private void GetResultByTimesOut()
         {
-            SocketConnection.SendMessage(BuildRequest(Command.GetResultByTimesOut));
+            if (SocketConnection.IsConnected())
+            {
+                SocketConnection.SendMessage(BuildRequest(Command.GetResultByTimesOut));
 
-            var response = new Response(SocketConnection.ReadMessage());
+                var response = new Response(SocketConnection.ReadMessage());
 
-            ShowIfGameFinished(response.GetTimeOutResponse(), true);
+                ShowIfGameFinished(response.GetTimeOutResponse(), true);
+                Console.WriteLine("Insert any key to continue...");
+            }
         }
 
         private void ShowIfGameFinished(List<string> responseMessage, bool timesOut2)
         {
-            for(int i = 0; i< responseMessage.Count(); i++)
+            for (int i = 0; i < responseMessage.Count(); i++)
             {
-                if(responseMessage[i] == "FINISHED")
+                if (responseMessage[i] == "FINISHED")
                 {
-                    if(responseMessage[i+1].Equals("Game has finished", StringComparison.OrdinalIgnoreCase))
+                    if (responseMessage[i + 1].Equals("Game has finished", StringComparison.OrdinalIgnoreCase))
                     {
                         LastPlayerWantsToLeave = true;
                         goto End;
                     }
-                    if (timesOut2)  Console.WriteLine("Active Game's time is over!. You can now join a new game.");
+                    if (timesOut2) Console.WriteLine("Active Game's time is over!. You can now join a new game.");
                     if (!timesOut2) Console.WriteLine("Game is over! ");
                     Console.WriteLine(responseMessage[i + 1]);
                     exitGame = true;
@@ -501,37 +522,21 @@ namespace Client
                     timer = null;
                 }
             }
-            End:;
+        End:;
         }
 
         private void RefreshBoard(List<string> response)
         {
-            BoardUI.DrawBoard(clientUsername, response[0], GetUsernamesAndStatus(response));
+            BoardUI.DrawBoard(clientUsername, response[0]);
             BoardUI.ShowHP(GetHP(response));
             BoardUI.ShowKills(GetKills(response));
             BoardUI.ShowNearPlayers(GetNearPlayers(response));
             Console.WriteLine("Action: ");
         }
 
-        private List<string> GetUsernamesAndStatus(List<string> response)
-        {
-            List<string> usernamesStatus = new List<string>();
-            for (int i = 0; i < response.Count(); i++)
-            {
-                if (response[i].Equals("PLAYERS"))
-                {
-                    for (int j = i + 1; j < response.Count(); j++)
-                    {
-                        usernamesStatus.Add(response[j]);
-                    }
-                }
-            }
-            return usernamesStatus;
-        }
-
         private string GetHP(List<string> response)
         {
-            for(int i=0; i<response.Count(); i++)
+            for (int i = 0; i < response.Count(); i++)
             {
                 if (response[i].Equals("HP"))
                     return response[i + 1];
@@ -568,4 +573,5 @@ namespace Client
         }
 
     }
+
 }

@@ -5,9 +5,8 @@ namespace Protocol
 {
     public class Response
     {
-        private readonly string[] responsePackage;
 
-        public string Message => responsePackage[1];
+        private readonly string[] responsePackage;
         
         private string MyResponseCode => responsePackage[0];
 
@@ -31,16 +30,6 @@ namespace Protocol
             return responsePackage[2];
         }
 
-        public string GetIfDead()
-        {
-            return responsePackage[1];
-        }
-
-        public string GetDeadPlayer()
-        {
-            return responsePackage[1];
-        }
-
         public string GetPlayerPosition()
         {
             return responsePackage[1];
@@ -60,21 +49,6 @@ namespace Protocol
         {
             return responsePackage[1];
         }
-
-        public string ServerMessage()
-        { 
-            return responsePackage[1];
-        }
-
-        public List<string> Messages()
-        {
-            var messages = new List<string>();
-
-            for (int i = 2; i < responsePackage.Length; i++)
-                messages.Add(responsePackage[i]);
-
-            return messages;
-        }
   
         public List<string> UserList()
         {
@@ -82,16 +56,6 @@ namespace Protocol
             for (var i = 1; i < responsePackage.Length; i++)
                 users.Add(responsePackage[i]);
             return users;
-        }
-
-        public List<string> GetOnGameUsernamesAndStatus()
-        {
-            var ret = new List<string>();
-            for (int i = 3; i < responsePackage.Length; i++)
-            {
-                ret.Add(responsePackage[i]);
-            }
-            return ret;
         }
 
         public List<string> GetDoActionResponse()
@@ -144,10 +108,27 @@ namespace Protocol
                 return false;
             }
         }
+
+        public bool GameIsFull()
+        {
+            return HasCode(ResponseCode.BadRequest);
+        }
+
+        public bool PlayerIsDead()
+        {
+            return HasCode(ResponseCode.BadRequest);
+        }
+
+        public bool LastPlayerAbandoned()
+        {
+            return HasCode(ResponseCode.BadRequest);
+        }
+
         public bool GameHasFinished()
         {
             return HasCode(ResponseCode.GameFinished);
         }
 
     }
+
 }
